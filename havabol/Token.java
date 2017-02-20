@@ -88,6 +88,12 @@ public class Token
 		this(""); 	// invoke the other constructor 
 	}
 	
+	
+	/**
+	 * 	Prints the string, primary value, and secondary value of the current token 
+	 * <p>
+	 */
+	
 	public void printToken()
 	{
 		String primClassifStr;
@@ -137,11 +143,19 @@ public class Token
 	
 	
 	
-	
-	
-	
-	
-	
+    /**
+     * Prints a string that may contain non-printable characters as two lines.  
+     * <p>
+     * On the first line, it prints printable characters by simply
+     * printing the character.  For non-printable characters
+     * in the string, it prints ". ".  
+     * <p>
+     * The second line prints a two character hex value for the non printable
+     * characters in the string line.  For the printable characters, it prints 
+     * a space.
+     * <p>
+     */
+
 	public void hexPrint()
 	{
 		int length = tokenStr.length();
@@ -149,9 +163,6 @@ public class Token
 		char ch;
 		int numSpaces = 25;
 		boolean containsUnprintable = false;
-		
-		
-		
 		
 		//string contains an escaped character, need to hex print
 		System.out.printf("%-11s %-12s "

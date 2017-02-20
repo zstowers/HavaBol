@@ -5,8 +5,10 @@ import java.io.*;
 public class ScannerException extends RuntimeException  {
 	
 	
-	private int iLineNr;
-	private String diagnoticTxt;
+	public int iLineNr;
+	public String diagnoticTxt;
+	
+	
 	
 	public ScannerException(int iLineNr, String diagnosticTxt)
 	{
@@ -14,6 +16,14 @@ public class ScannerException extends RuntimeException  {
 		this.diagnoticTxt = diagnosticTxt;
 		printErrorMessage(iLineNr, diagnosticTxt);
 	}
+	
+	/**
+	 * Throws a runtime exception and prints a diagnostic error message 
+	 * <p>
+	 * 	 
+	 * @param iLineNr			The line number of the error 
+	 * @param diagnosticTxt		The error message to be printed 
+	 */
 	
 	public void printErrorMessage(int iLineNr, String diagnosticTxt)
 	{

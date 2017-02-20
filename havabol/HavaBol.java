@@ -31,6 +31,7 @@ public class HavaBol {
 			
 			while (! scan.getNext().isEmpty())
 			{
+				//Call hexPrint if the token is a string literal, otherwise, call printToken 
 				if(scan.currentToken.subClassif == 5)
 					scan.currentToken.hexPrint();
 				else

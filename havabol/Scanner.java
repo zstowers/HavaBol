@@ -64,7 +64,14 @@ public class Scanner {
 	
 
 	/**
-	 * 
+	 * 	Gets the next token.  Automatically advances to the next source line when
+	 *  necessary. 
+	 *  <p>
+	 *  
+	 * @return			tokenStr for the current token.  If there are no more 
+	 * 					tokens then it returns "". 
+	 * @throws 			Exceptions from getTokenNoReurn(), assignNumber(), and 
+	 * 					assignNextTokenString()
 	 */
 	public String getNext() throws Exception
 	{
@@ -96,6 +103,8 @@ public class Scanner {
 		nextToken = new Token();
 		
 		
+		//The last token on the previous line has already been collected and printed so print 
+		//print the line 
 		if(printLine == true)
 		{
 			System.out.printf("  %d  %s\n", (iSourceLineNr + 1), sourceLineM.get(iSourceLineNr));
@@ -192,8 +201,15 @@ public class Scanner {
 	}
 
 	
+	
+	
 	/**
-	 * 
+	 * Assigns the delimiter based on its value,   
+	 *  <p>
+	 *  
+	 * @param currentChar		The value of the delimiter 
+	 * @param iStartingIndex	The position of the delimiter in the line 	
+	 * @throws ScannerException 
 	 */
 	
 	public void handleDelimiters(char currentChar, int iStartingIndex) throws Exception
@@ -262,9 +278,11 @@ public class Scanner {
 	
 	
 /**
- * Assign the primary and sub classes of the current token 	
- * @param token
- * @throws Exception 
+ * Assign the primary and sub classes of the current token, uses the global 
+ * symbol table to check for global variables 	
+ * <p>
+ * @param token			current Token
+ * @throws Exception 	ScannerException 
  */
 	
 	
@@ -368,62 +386,34 @@ public class Scanner {
 	}
 	
 	
-	
-	
 /**
- * Checks to see if the line is blank or if the line is only a comment 
- * @return
- * @throws Exception
- */
-	
-	
-	
-
-	
-	
-	
-	/**
-	 * 	Moves the next line of the file when the end of the previous line is reached.
-	 * 	Also checks to make sure that it has not reached the end of the file and 
-	 * 	sets the nextToken's primary class to EOF if there are no more lines.
-	 * 	Sets textCharM as the next line if there is another line in the file 
-	 * <p>
-	 * 
-	 */
-
-		
-		
-/**
- * Assigns the string literal and handles the error if it doesn't find a matching quote 		
- * @param quoteChar
- * @throws Exception
+ * Assigns the string literal and handles the error if it doesn't find a matching quote
+ * <p> 		
+ * @param quoteChar		Either a single or double quote 
+ * @throws Exception	ScannerException 
  */
 		
 		
-		public void assignStringLiteral(char quoteChar) throws Exception 
+	public void assignStringLiteral(char quoteChar) throws Exception 
+	{
+			
+		int i;
+		char[] newChArray = new char[textCharM.length];
+		int j = 0;
+		int totalChars = 0;
+			
+		//move the column position to the first character in the string
+		iColPos++;
+			
+		for(i = iColPos; i < textCharM.length; i++)
 		{
-			
-			
-			int i;
-			char[] newChArray = new char[textCharM.length];
-			int j = 0;
-			int totalChars = 0;
-			
-			
-			//move the column position to the first character in the string
-			iColPos++;
-			
-	
-			for(i = iColPos; i < textCharM.length; i++)
+			//deal with unprintable characters 
+			if(textCharM[i] == '\\')
 			{
-				
-				//deal with unprintable characters 
-				if(textCharM[i] == '\\')
-				{
-					i++;
+				i++;
 					
-					switch(textCharM[i])
-					{
+				switch(textCharM[i])
+				{
 					case '\"' :
 						newChArray[j] = '\"';
 						j++;
@@ -453,87 +443,97 @@ public class Scanner {
 						newChArray[j] = 0x07;
 						j++;
 						break;
-					}
+				}
 					
-					totalChars++;
-				}
 				
-				else if(textCharM[i] == quoteChar)
-				{
+				totalChars++;
+			}
+				
+			else if(textCharM[i] == quoteChar)
+			{
 					
-					nextToken.tokenStr = String.valueOf(newChArray, 0, totalChars);
-					nextToken.iColPos = i;
-					nextToken.iSourceLineNr = iSourceLineNr + 1;
-					//Assign the classes 
-					nextToken.primClassif = 1;
-					nextToken.subClassif = 5;
-					iColPos = i + 1;
-					return;
-				}
+				nextToken.tokenStr = String.valueOf(newChArray, 0, totalChars);
+				nextToken.iColPos = i;
+				nextToken.iSourceLineNr = iSourceLineNr + 1;
 				
-				
-				else
-				{
-					newChArray[j] = textCharM[i];
-					j++;
-					totalChars++;
-				}
+				//Assign the classes 
+				nextToken.primClassif = 1;
+				nextToken.subClassif = 5;
+				iColPos = i + 1;
+				return;
 			}
 				
 				
-			//if you make it here then there was no matching " 
-			HavabolUtilities.scannerError("Reached the end of the line with no matching %c", quoteChar);
-		
-		}
-		
-		public void assignNumber(Token token) throws Exception
-		{
-			String restOfString = "";
-			char[] number = token.tokenStr.toCharArray();
-			char currentChar;
-			int index = -1;
-			int i;
-			
-			token.primClassif = 1;
-			
-			
-			//make sure the number contains only numbers or a decimal
-			for(i = 0; i < number.length; i++)
-			{
-				currentChar = number[i];
-				if(!Character.isDigit(currentChar) && currentChar != '.' && currentChar != '_')
-					HavabolUtilities.scannerError("'%c' is not a valid character for this type", currentChar);
-			}
-			
-			index = token.tokenStr.indexOf('.');
-			
-			if(index >= 0)
-			{
-				//make sure there is not an underscore next to the decimal point 
-				if(number[index-1] == '_' || number[index +1] == '_')
-					HavabolUtilities.scannerError("Cannot have a %c next to a .", '_');
-				
-				//make sure there isn't another '.' in the number 
-				restOfString = token.tokenStr.substring((index + 1), token.tokenStr.length());
-				
-				if(restOfString.indexOf('.') >= 0) 
-					HavabolUtilities.scannerError("More than one '%c' is not allowed", '.');
-				else 
-					token.subClassif = 3;
-			}
 			else
-				token.subClassif = 2;
+			{
+				newChArray[j] = textCharM[i];
+				j++;
+				totalChars++;
+			}
+		}
+				
+				
+		//if you make it here then there was no matching quoteChar 
+		HavabolUtilities.scannerError("Reached the end of the line with no matching %c", quoteChar);
+		
+	}
+	
+	
+	/**
+	 * Assigns classes based on an integer or float value and checks for invalid characters  
+	 * <p>
+	 * @param token			The current token 
+	 * @throws Exception	ScannerException 
+	 */
+		
+	public void assignNumber(Token token) throws Exception
+	{
+		String restOfString = "";
+		char[] number = token.tokenStr.toCharArray();
+		char currentChar;
+		int index = -1;
+		int i;
 			
+		token.primClassif = 1;
+			
+		//make sure the number contains only numbers or a decimal
+		for(i = 0; i < number.length; i++)
+		{
+			currentChar = number[i];
+			if(!Character.isDigit(currentChar) && currentChar != '.' && currentChar != '_')
+				HavabolUtilities.scannerError("'%c' is not a valid character for this type", currentChar);
+		}
+			
+		index = token.tokenStr.indexOf('.');
+			
+		if(index >= 0)
+		{
+			//make sure there is not an underscore next to the decimal point 
+			if(number[index-1] == '_' || number[index +1] == '_')
+				HavabolUtilities.scannerError("Cannot have a %c next to a .", '_');
+				
+			//make sure there isn't another '.' in the number 
+			restOfString = token.tokenStr.substring((index + 1), token.tokenStr.length());
+				
+			if(restOfString.indexOf('.') >= 0) 
+				HavabolUtilities.scannerError("More than one '%c' is not allowed", '.');
+			else 
+				token.subClassif = 3;
 		}
 		
+		else
+			token.subClassif = 2;
+			
+	}
 		
-		/**
-		 * 	Puts the token into nextToken but does not assign it to the current token.
-		 *    
-		 *  <p>
-		 *  
-		 * @throws Exception
-		 */
+		
+	/**
+	* Puts the token into nextToken but does not assign it to the current token. 
+	* Used in the constructor as well as after blank lines and comments 
+	* <p>
+	*  
+	* @throws Exception		ScannerException 
+	*/
 		
 		public void getTokenNoReturn() throws Exception
 		{
@@ -549,6 +549,7 @@ public class Scanner {
 			
 			startingPosition = iColPos;
 			
+			//Move the the first character 
 			while(textCharM[startingPosition] == ' ')
 			{
 				iColPos++;
@@ -558,6 +559,7 @@ public class Scanner {
 			currentChar = textCharM[iColPos];
 			
 			
+			//Get the token 
 			while(currentChar != ' ')
 			{
 				if(delimiters.indexOf(currentChar) >= 0)
@@ -585,6 +587,7 @@ public class Scanner {
 					currentChar = textCharM[iColPos];
 			}
 			
+			
 			nextToken.iColPos = iColPos;
 			assignNextTokenString(startingPosition);
 			iColPos++;
@@ -593,8 +596,10 @@ public class Scanner {
 		
 	
 	/**
-	 * 	
-	 * @param startingPosition
+	 * Assigns the string value to nextToken.tokenstr 
+	 * <p>
+	 * 
+	 * @param startingPosition		position of the token's first char  
 	 */
 	private void assignNextTokenString(int startingPosition)
 	{
@@ -619,7 +624,6 @@ public class Scanner {
 		}
 		
 	
-		
 }
 
 	
