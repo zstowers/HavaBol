@@ -377,7 +377,11 @@ public class Scanner {
 		else
 		{
 			token.primClassif = 1;
-			token.subClassif = 1;
+			
+			if(token.tokenStr.equals("T") || token.tokenStr.equals("F"))
+				token.subClassif = 4;
+			else
+				token.subClassif = 1;
 			return;
 		}
 		
