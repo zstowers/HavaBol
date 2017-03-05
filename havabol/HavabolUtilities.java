@@ -1,5 +1,11 @@
 package havabol;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 /**
 * 
 * @author Jason Luna
@@ -176,6 +182,8 @@ public class HavabolUtilities {
 	}
 	
 	
+
+	
 	/**
 	 * Formats the error message and throws a scanner exception
 	 * <p> 
@@ -188,6 +196,34 @@ public class HavabolUtilities {
 	{
 		String diagnosticTxt = String.format(fmt, varArgs);
 		throw new ScannerException((Scanner.iSourceLineNr + 1), diagnosticTxt);
+	}
+	
+	
+	public static void printMap(HashMap<String, STEntry> table)
+	{
+		Set entrySet = table.entrySet();
+		Iterator it = entrySet.iterator();
+		STEntry st;
+		String primary;
+		String secondary;
+		
+		while(it.hasNext())
+		{
+			Map.Entry entry = (Map.Entry)it.next();
+			st = (STEntry) entry.getValue();
+			System.out.println(st.toString());
+		}
+	}
+	
+	public static void printStorage( HashMap<String, StorageEntry> map)
+	{
+		
+		for(Map.Entry<String, StorageEntry> entry : map.entrySet())
+		{
+			System.out.println(entry.getKey() + " " + entry.getValue());
+		}
+		
+	
 	}
 	
 	

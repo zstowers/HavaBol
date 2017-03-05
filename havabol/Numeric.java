@@ -8,7 +8,7 @@ public class Numeric {
 
 	// initialize
 	public int integerValue;
-	public Scanner scan;
+	public Parser parser;
 	public ResultValue result;
 	public double doubleValue;
 	public String expr;
@@ -16,25 +16,33 @@ public class Numeric {
 	public String strValue; // display value
 	public int type; // INTEGER, FLOAT
 
-	public Numeric(Scanner scan, ResultValue result, String expr, String operandStr) {
+	public Numeric(Parser parser, ResultValue result, String expr, String operandStr) {
 		
-		this.scan = scan;
+		this.parser = parser;
 		this.result = result;
 		this.expr = expr;
 		this.operandStr = operandStr;
 		
-		strValue = result.getValue();
-		if(isFloat(strValue)){
-			type = 3;
-			doubleValue = getDoubleValue(strValue);
-		}
-		else if(isInt(strValue)){
+		strValue = result.value;
+		
+		
+		if(isInt(strValue)){
 			type = 2;
 			integerValue = getIntegerValue(strValue);
 		}
+		
+		else if(isFloat(strValue)){
+			type = 3;
+			doubleValue = getDoubleValue(strValue);
+		}
+		
+		
+		
+		
+		
 		else{
 			NumberFormatException e = new NumberFormatException();
-			System.err.printf("Line %d Invalid numeric constant: %s  %s  %s %d: %s", scan.iSourceLineNr, strValue, expr, operandStr, e);
+			//System.err.printf("Line %d Invalid numeric constant: %s  %s  %s %d: %s", scan.iSourceLineNr, strValue, expr, operandStr, e);
 			e.printStackTrace();
 			System.exit(-1);
 		}	
@@ -48,8 +56,10 @@ public class Numeric {
 	public int getIntegerValue(String str) {
 		return  Integer.parseInt(str);
 	}
+	
 	public double getDoubleValue(String str) { 
 		return Double.parseDouble(str);
+		
 	}
 	
 	

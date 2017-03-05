@@ -338,7 +338,7 @@ public class Scanner {
 					break;
 				
 				case 1:
-					token.subClassif = 4;
+					token.subClassif = 1;
 					break;
 			}
 		}

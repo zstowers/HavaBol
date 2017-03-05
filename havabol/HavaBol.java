@@ -1,6 +1,7 @@
 package havabol;
 
 import java.io.*;
+import java.util.Map;
 
 
 public class HavaBol {
@@ -10,7 +11,9 @@ public class HavaBol {
 		
 		SymbolTable globalSymbolTable; 
 	    Scanner scan;	
-		long startTime = System.currentTimeMillis();
+	    Parser parser;
+	    StorageManager storageManager;
+	    long startTime = System.currentTimeMillis();
 		long endTime;
 		long totalTime;
 		
@@ -23,20 +26,29 @@ public class HavaBol {
 					, "tokenStr");
 			
 			globalSymbolTable = new SymbolTable();
-		    scan = new Scanner(args[0], globalSymbolTable);
+			storageManager = new StorageManager();
+		    
+			scan = new Scanner(args[0], globalSymbolTable);
+			parser = new Parser(scan, globalSymbolTable, storageManager);
 			
 			
-			
-		
-			
-			while (! scan.getNext().isEmpty())
+			for(int i = 0; i < 17; i++)
 			{
-				//Call hexPrint if the token is a string literal, otherwise, call printToken 
-				if(scan.currentToken.subClassif == 5)
-					scan.currentToken.hexPrint();
-				else
-					scan.currentToken.printToken();
+				parser.parseTokens();
+				//scan.currentToken.printToken();
 			}
+			//scan.currentToken.printToken();
+			//while (! scan.getNext().isEmpty())
+			//{
+				//Call hexPrint if the token is a string literal, otherwise, call printToken 
+			//	if(scan.currentToken.subClassif == 5)
+			//		scan.currentToken.hexPrint();
+			//	else
+			//		scan.currentToken.printToken();
+			//}
+			
+			//HavabolUtilities.printMap(parser.globalSymbolTable.symbolTable);
+			HavabolUtilities.printStorage(parser.storageManager.storageManager);
 			
 			endTime = System.currentTimeMillis();
 			totalTime = (endTime - startTime) / 1000;

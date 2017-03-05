@@ -10,13 +10,15 @@ package havabol;
 *
 * @author donte_000
 */
+
 public class STIdentifier extends STEntry {
 	
 	
 	public int dclType;
 	public int nonLocal;
-	String structure;
-	String parm;
+	public String structure;
+	public String parm;
+	
 	
 	public STIdentifier(String symbol, int primClassif, String structure, String parm, int dclType, int nonLocal)
 	{
