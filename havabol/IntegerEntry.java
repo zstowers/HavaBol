@@ -10,10 +10,22 @@ public class IntegerEntry extends StorageEntry {
 		this.variableValue = variableValue;
 	}
 	
-	public void replaceValue(IntegerEntry entry, int intValue)
+	@Override
+	public void replaceValue(StorageEntry entry, String variableValue, boolean isNegative)
 	{
-		entry.variableValue = intValue;
+		((IntegerEntry)entry).variableValue = Numeric.getIntegerValue(variableValue);
+		
+		if(isNegative == true)
+			((IntegerEntry)entry).variableValue = -((IntegerEntry)entry).variableValue;
+			
 		return;
+	}
+	
+	@Override
+	public String returnValueAsString()
+	{
+		
+		return String.valueOf(variableValue);
 	}
 
 

@@ -10,10 +10,18 @@ public String variableValue;
 		this.variableValue = variableValue;
 	}
 	
-	public void replaceValue(StringEntry entry, String variableValue)
+	@Override
+	public void replaceValue(StorageEntry entry, String variableValue, boolean isNegative)
 	{
-		entry.variableValue = variableValue;
+		//entry.variableValue = variableValue;
+		((StringEntry)entry).variableValue = variableValue;
 		return;
+	}
+	
+	@Override
+	public String returnValueAsString()
+	{
+		return variableValue;
 	}
 
 	@Override

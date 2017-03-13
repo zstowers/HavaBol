@@ -20,10 +20,10 @@ public class HavaBol {
 		try
 		{
 			//Print a column heading 
-			System.out.printf("%-11s %-12s %s\n"
-					, "primClassif"
-					, "subClassif"
-					, "tokenStr");
+		//	System.out.printf("%-11s %-12s %s\n"
+		//			, "primClassif"
+		//			, "subClassif"
+		//			, "tokenStr");
 			
 			globalSymbolTable = new SymbolTable();
 			storageManager = new StorageManager();
@@ -32,9 +32,9 @@ public class HavaBol {
 			parser = new Parser(scan, globalSymbolTable, storageManager);
 			
 			
-			for(int i = 0; i < 17; i++)
+			for(int i = 0; i < 61 ; i++)
 			{
-				parser.parseTokens();
+				parser.statement();
 				//scan.currentToken.printToken();
 			}
 			//scan.currentToken.printToken();
@@ -47,7 +47,7 @@ public class HavaBol {
 			//		scan.currentToken.printToken();
 			//}
 			
-			//HavabolUtilities.printMap(parser.globalSymbolTable.symbolTable);
+			HavabolUtilities.printSymbolTable(parser.symbolTable.symbolTable);
 			HavabolUtilities.printStorage(parser.storageManager.storageManager);
 			
 			endTime = System.currentTimeMillis();

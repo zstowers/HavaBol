@@ -2,7 +2,7 @@ package havabol;
 
 public class ResultValue {
 
-	public String type; // usually data type of the result
+	public int type; // usually data type of the result
 	public String value; // value of the result
 	public String structure; // primitive, fixed array, unbounded array
 	public String terminatingStr; // used for end of lists of things (e.g., a list of
@@ -12,7 +12,7 @@ public class ResultValue {
 	
 	public ResultValue() {
 		
-		this.type = "";
+		this.type = 0;
 		this.value = "";
 		this.structure = "";
 		this.terminatingStr = "";

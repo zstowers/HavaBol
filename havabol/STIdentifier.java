@@ -27,6 +27,15 @@ public class STIdentifier extends STEntry {
 		this.structure = structure;
 		this.nonLocal = nonLocal;
 	}
+
+
+	@Override
+	public String toString() {
+		return "STIdentifier [dclType=" + dclType + ", nonLocal=" + nonLocal + ", structure=" + structure + ", parm="
+				+ parm + ", symbol=" + symbol + ", primClassif=" + primClassif + "]";
+	}
+	
+	
 	
 	
 

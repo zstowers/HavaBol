@@ -12,10 +12,21 @@ public class FloatEntry extends StorageEntry {
 		
 	}
 	
-	public void replaceValue(FloatEntry entry, double doubleValue)
+	@Override 
+	public void replaceValue(StorageEntry entry, String variableValue, boolean isNegative)
 	{
-		entry.variableValue = doubleValue;
+		((FloatEntry)entry).variableValue = Numeric.getDoubleValue(variableValue);
+		
+		if(isNegative == true)
+			((FloatEntry)entry).variableValue = -((FloatEntry)entry).variableValue;
+		
 		return;
+	}
+
+	@Override
+	public String returnValueAsString()
+	{
+		return String.valueOf(variableValue);
 	}
 
 

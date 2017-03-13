@@ -19,6 +19,17 @@ public class STEntry {
 		this.symbol = symbol;
 		this.primClassif = primClassif;
 	}
+	
+	
+	
+	public static int returnSubClass(STEntry entry)
+	{
+		if(entry instanceof STIdentifier)
+			return ((STIdentifier) entry).dclType;
+		else 
+			return 0;
+	}
+	
 
 	@Override
 	public String toString() {

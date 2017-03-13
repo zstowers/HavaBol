@@ -82,18 +82,20 @@ public class Scanner {
 		//Assign the current Token 
 		currentToken = nextToken;
 		
+		//System.out.println("In scanner, current Token is " + currentToken.tokenStr);
+		
 		// If there were any blank lines or lines with comments, print them out.  This helps keep 
 		// everything in order and helps with debugging 
-		if(numBlanks > 0)
-		{
-			blankLineNr = (iSourceLineNr + 1) - numBlanks;
-			for(int i = 0; i < numBlanks; i++)
-			{
-				System.out.println("  " + blankLineNr + sourceLineM.get((blankLineNr - 1)));
-				blankLineNr++;
-			}
-			numBlanks = 0;
-		}
+//		if(numBlanks > 0)
+//		{
+//			blankLineNr = (iSourceLineNr + 1) - numBlanks;
+//			for(int i = 0; i < numBlanks; i++)
+//			{
+//				System.out.println("  " + blankLineNr + sourceLineM.get((blankLineNr - 1)));
+//				blankLineNr++;
+//			}
+//			numBlanks = 0;
+//		}
 		
 		//return if there are no more tokens 
 		if(currentToken.primClassif == 6)
@@ -105,11 +107,11 @@ public class Scanner {
 		
 		//The last token on the previous line has already been collected and printed so print 
 		//print the line 
-		if(printLine == true)
-		{
-			System.out.printf("  %d  %s\n", (iSourceLineNr + 1), sourceLineM.get(iSourceLineNr));
-			printLine = false;
-		}
+//		if(printLine == true)
+//		{
+//			System.out.printf("  %d  %s\n", (iSourceLineNr + 1), sourceLineM.get(iSourceLineNr));
+//			printLine = false;
+//		}
 		
 		//end of the line, move to the next one 
 		if(iColPos == textCharM.length)
@@ -137,6 +139,8 @@ public class Scanner {
 		// Get the first character of the token 
 		currentChar = textCharM[iColPos];
 		
+		
+		
 		//If the first character is a space or a tab then keep going until you hit a character
 		//If you don't hit a character then move to the next line 
 		while(currentChar == ' ' || currentChar == '\t')
@@ -157,15 +161,19 @@ public class Scanner {
 				currentChar = textCharM[iColPos];
 		}
 		
+		
 		//Beginning position of the token in the string 
 		iStartingIndex = iColPos;
 		nextToken.iColPos = iStartingIndex;
 		
 		
+		
 		//The first character in the string is a delimiter 
 		if(delimiters.indexOf(currentChar) >= 0)
+		{
+			//System.out.println("Current Char = " + currentChar);
 			handleDelimiters(currentChar, iStartingIndex);
-
+		}
 	
 		//First char  is not a delimiter, keep going through the characters until you hit a space, tab, delimiter,
 		//or end of the line 
@@ -174,10 +182,14 @@ public class Scanner {
 			//keep going through the characters until you hit a space 
 			while(currentChar != ' ' && currentChar != '\t')
 			{
+				
 				//don't increment the column position if you hit a delimiter so that it will be picked 
 				//up on the next iteration 
 				if(delimiters.indexOf(currentChar) >= 0)
+				{
+					//System.out.println("The delimiter that will cause this break is " + currentChar);
 					break;
+				}
 				
 				else
 				{
@@ -194,6 +206,8 @@ public class Scanner {
 		}
 		
 		nextToken.iSourceLineNr = iSourceLineNr + 1;
+		
+		//System.out.println("In scanner, next token is " + nextToken.tokenStr);
 		
 		assignToken(currentToken);
 		
@@ -292,6 +306,9 @@ public class Scanner {
 		char firstChar = token.tokenStr.charAt(0);
 		
 		STEntry entry = symbolTable.getSymbol(token.tokenStr);
+		
+		
+		
 		
 
 		if(entry != null)
@@ -568,6 +585,7 @@ public class Scanner {
 			{
 				if(delimiters.indexOf(currentChar) >= 0)
 				{
+				
 					//is it a string?
 					if(currentChar == '\"' || currentChar == '\'')
 					{
@@ -594,7 +612,7 @@ public class Scanner {
 			
 			nextToken.iColPos = iColPos;
 			assignNextTokenString(startingPosition);
-			iColPos++;
+			//iColPos++;
 		}	
 		
 		

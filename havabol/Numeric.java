@@ -49,17 +49,93 @@ public class Numeric {
 	}
 	
 	/**
-	 * Converts Strings to Integers or Doubles
+	 * Converts Strings to Integers 
 	 * @param str
-	 * @return ints or doubles
+	 * @return int
 	 */
-	public int getIntegerValue(String str) {
-		return  Integer.parseInt(str);
+	public static int getIntegerValue(String str) {
+		
+		if(isFloat(str))
+			return (int) getDoubleValue(str);
+		
+		else	
+			return  Integer.parseInt(str);
 	}
 	
-	public double getDoubleValue(String str) { 
+	/**
+	 * Converts Strings to Doubles 
+	 * @param str
+	 * @return
+	 */
+	public static double getDoubleValue(String str) { 
+		
 		return Double.parseDouble(str);
 		
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public static double doubleArithmetic(double op1, double op2, String operator)
+	{
+		switch(operator)
+		{
+			case "^" :
+				return Math.pow(op1, op2);
+			
+			case "+" :
+				return op1 + op2;
+				
+			case "-" :
+				return op1 - op2;
+			
+			case "*" :
+				return op1 * op2;
+			
+			case "/" :
+				return op1 / op2;
+			
+			default :
+				System.out.println("This is a double math error");
+				return 0.0;
+			
+		}
+	
+	}
+	
+	/**
+	 * 
+	 * @param op1
+	 * @param op2
+	 * @param operator
+	 * @return
+	 */
+	public static int intArithmetic(int op1, int op2, String operator)
+	{
+		switch(operator)
+		{
+			case "^" :
+				return (int) Math.pow(op1, op2);
+			
+			case "+" :
+				return op1 + op2;
+				
+			case "-" :
+				return op1 + op2;
+			
+			case "*" :
+				return op1 * op2;
+			
+			case "/" :
+				return op1 / op2;
+			
+			default :
+				System.out.println("this is an integer math error");
+				return 0;
+			
+		}
+	
 	}
 	
 	

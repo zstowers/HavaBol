@@ -1,10 +1,11 @@
 package havabol;
 
-public class StorageEntry {
+public abstract class StorageEntry {
 
 	public String variableName;
 	//public String variableValue;
 	public int dataType;
+	
 	
 	public StorageEntry(String variableName, int dataType)
 	{
@@ -18,12 +19,22 @@ public class StorageEntry {
 	
 	
 	
+	public abstract void replaceValue(StorageEntry entry, String variableValue, boolean isNegative);
+	
+	
+	public abstract String returnValueAsString();
+
+	
 
 	
 	public String toString() {
 		return "StorageEntry [variableName=" + variableName + ", dataType="
 				+ dataType + "]";
 	}
+
+
+	
+	
 	
 	
 }

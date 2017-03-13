@@ -199,31 +199,31 @@ public class HavabolUtilities {
 	}
 	
 	
-	public static void printMap(HashMap<String, STEntry> table)
+	public static void printSymbolTable(HashMap<String, STEntry> map)
 	{
-		Set entrySet = table.entrySet();
-		Iterator it = entrySet.iterator();
-		STEntry st;
-		String primary;
-		String secondary;
+		System.out.println("\t\t Symbol Table\n");
 		
-		while(it.hasNext())
+		for(Map.Entry<String,STEntry> entry : map.entrySet())
 		{
-			Map.Entry entry = (Map.Entry)it.next();
-			st = (STEntry) entry.getValue();
-			System.out.println(st.toString());
+			System.out.println(entry.getKey() + " " + entry.getValue());
 		}
 	}
 	
 	public static void printStorage( HashMap<String, StorageEntry> map)
 	{
+		System.out.println("\n\t\t Storage Manager\n");
 		
 		for(Map.Entry<String, StorageEntry> entry : map.entrySet())
 		{
-			System.out.println(entry.getKey() + " " + entry.getValue());
+			System.out.println(entry.getKey() + " "  + entry.getValue());
 		}
-		
+	}
 	
+	public static double exponent(double op1, double op2)
+	{
+		
+		return Math.pow(op1, op2);
+		
 	}
 	
 	
