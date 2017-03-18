@@ -12,8 +12,8 @@ public class Scanner {
 	public static char[] textCharM;				//char for the current text line 
 	public static int iSourceLineNr;				//Line number in sourceLineM for current text line 
 	public static int iColPos;						//Column position within the current text line 
-	public Token currentToken;				//Token established with the most recent call to getNext()
-	public Token nextToken;					//The token following the currentToken 
+	public  Token currentToken;				//Token established with the most recent call to getNext()
+	public  Token nextToken;					//The token following the currentToken 
 	private static final String delimiters = "\t;:,()\'\"=!<>+-*/[]#^\n";	//string to check for delimiters
 	private static final String operators = "+-*/+=<>!^";	//string to check for operators 
 	private static final String separators = "(),:;[]";		//string to check for separators 
@@ -205,7 +205,7 @@ public class Scanner {
 			assignNextTokenString(iStartingIndex);
 		}
 		
-		nextToken.iSourceLineNr = iSourceLineNr + 1;
+		nextToken.iSourceLineNr = iSourceLineNr;
 		
 		//System.out.println("In scanner, next token is " + nextToken.tokenStr);
 		
@@ -601,7 +601,7 @@ public class Scanner {
 				if(iColPos == textCharM.length)
 				{
 					nextToken.iColPos = iColPos - 1;
-					nextToken.iSourceLineNr = iSourceLineNr + 1;
+					nextToken.iSourceLineNr = iSourceLineNr;
 					assignNextTokenString(startingPosition);
 					return;
 				}
@@ -611,12 +611,38 @@ public class Scanner {
 			
 			
 			nextToken.iColPos = iColPos;
+			nextToken.iSourceLineNr = iSourceLineNr;
 			assignNextTokenString(startingPosition);
 			//iColPos++;
 		}	
 		
-		
 	
+		
+	/**
+	 * Sets the position in the file.  
+	 * Used when you encounter a while loop and a for loop
+	 * @throws Exception 
+	 */
+	public void setPosition(int iSourceLineNr, int iColPos) throws Exception
+	{
+		currentToken = new Token();
+		nextToken = new Token();
+		
+		Scanner.iSourceLineNr = iSourceLineNr;
+		Scanner.iColPos = iColPos;
+		Scanner.textCharM = sourceLineM.get(Scanner.iSourceLineNr).toCharArray();
+		
+		
+	//	System.out.println(Scanner.iSourceLineNr);
+		getTokenNoReturn();
+		
+		
+		
+		
+	}
+		
+		
+		
 	/**
 	 * Assigns the string value to nextToken.tokenstr 
 	 * <p>
@@ -628,8 +654,8 @@ public class Scanner {
 		nextToken.tokenStr = String.valueOf(textCharM, startingPosition, (iColPos - startingPosition));
 		return;
 	}
-		
-
+	
+	
 	/**
 	 * Sets the error message as a string and throws a ScannerException 
 	 * <p>

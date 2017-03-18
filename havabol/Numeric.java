@@ -131,7 +131,7 @@ public class Numeric {
 				return op1 / op2;
 			
 			default :
-				System.out.println("this is an integer math error");
+				System.out.println("this is an integer math error, " + operator + " is not an operator");
 				return 0;
 			
 		}

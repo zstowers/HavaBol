@@ -32,11 +32,11 @@ public class HavaBol {
 			parser = new Parser(scan, globalSymbolTable, storageManager);
 			
 			
-			for(int i = 0; i < 61 ; i++)
-			{
+	//		for(int i = 0; i < 69; i++)
+	//		{
 				parser.statement();
 				//scan.currentToken.printToken();
-			}
+	//		}
 			//scan.currentToken.printToken();
 			//while (! scan.getNext().isEmpty())
 			//{
