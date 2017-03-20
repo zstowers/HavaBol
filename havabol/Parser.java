@@ -64,7 +64,6 @@ public class Parser {
 								break;
 								
 							case ("while") :
-								//System.out.println("WhileStmt will be called");
 								whileStmt(bExec);
 								break;
 								
@@ -718,14 +717,7 @@ public class Parser {
 						
 					
 					default :
-						//must be a - for a negative number 
-						//System.out.println(scan.currentToken.tokenStr);
-						//if(!scan.currentToken.tokenStr.equals("-"))
 						System.out.println("Error in print, invalid token");
-						
-						//scan.getNext();
-						//value = storageManager.getStorageEntry(scan.currentToken.tokenStr);
-						//System.out.print("-" + value.returnValueAsString());
 						break;
 						
 				}
@@ -796,6 +788,8 @@ public class Parser {
 				assign(variableString, res02);	//assigns the value of res02 to the variable that is identified 
 												//by variableString 
 			
+		
+		
 		}
 		
 		//next token should be a ; 
