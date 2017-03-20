@@ -322,6 +322,32 @@ public class Parser {
 							return "T";
 						else
 							return "F";
+					
+					case ">" :
+						if(val1.compareTo(val2) > 0)
+							return "T";
+						else
+							return "F";
+						
+					case ">=" :
+						if(val1.compareTo(val2) >= 0)
+							return "T";
+						else
+							return "F";
+					
+					case "<" :
+						if(val1.compareTo(val2) < 0)
+							return "T";
+						else
+							return "F";
+						
+					case "<=" :
+						if(val1.compareTo(val2) <= 0)
+							return "T";
+						else
+							return "F";
+						
+						
 						
 					default :
 						System.out.println("Error for now");
@@ -578,8 +604,67 @@ public class Parser {
 			while(!scan.currentToken.tokenStr.equals(")"))
 			{
 				
+				if(scan.currentToken.tokenStr.equals("-"))
+				{
+					// the number is negative 
+					System.out.print(scan.currentToken.tokenStr);
+					scan.getNext();
+				}
+				
 				switch(scan.currentToken.subClassif)
 				{
+					case Token.INTEGER :	
+						//check for a math operator 
+						if(mathOperators.indexOf(scan.nextToken.tokenStr) >= 0)
+						{
+							
+							leftOperand.type = INTEGER;
+							leftOperand.value = scan.currentToken.tokenStr;
+							scan.getNext();
+							operatorString = scan.currentToken.tokenStr;
+							
+							//move to the right operand and perform the math function 
+							scan.getNext();
+							result = operateOnExpression(leftOperand, operatorString);
+							//print the value as a string based on the data type of the left operand 
+							System.out.print(result.value);
+						}
+						
+						else
+							System.out.print(scan.currentToken.tokenStr);
+						
+						break;
+				
+					case Token.FLOAT :
+						//check for a math operator 
+						if(mathOperators.indexOf(scan.nextToken.tokenStr) >= 0)
+						{
+							
+							leftOperand.type = FLOAT;
+							leftOperand.value = scan.currentToken.tokenStr;
+							scan.getNext();
+							operatorString = scan.currentToken.tokenStr;
+							
+							//move to the right operand and perform the math function 
+							scan.getNext();
+							result = operateOnExpression(leftOperand, operatorString);
+							//print the value as a string based on the data type of the left operand 
+							System.out.print(result.value);
+						}
+						
+						else
+							System.out.print(scan.currentToken.tokenStr);
+						
+						break;
+						
+					case Token.BOOLEAN :
+						System.out.println(scan.currentToken.tokenStr);
+						break;
+						
+					case Token.DATE :
+						System.out.println(scan.currentToken.tokenStr);
+						break;
+				
 					case Token.STRING: //It is a string literal 
 						System.out.print(scan.currentToken.tokenStr);
 						break;
@@ -634,12 +719,13 @@ public class Parser {
 					
 					default :
 						//must be a - for a negative number 
-						if(!scan.currentToken.tokenStr.equals("-"))
-							System.out.println("Operator error, expected a - ");
+						//System.out.println(scan.currentToken.tokenStr);
+						//if(!scan.currentToken.tokenStr.equals("-"))
+						System.out.println("Error in print, invalid token");
 						
-						scan.getNext();
-						value = storageManager.getStorageEntry(scan.currentToken.tokenStr);
-						System.out.print("-" + value.returnValueAsString());
+						//scan.getNext();
+						//value = storageManager.getStorageEntry(scan.currentToken.tokenStr);
+						//System.out.print("-" + value.returnValueAsString());
 						break;
 						
 				}
@@ -647,7 +733,10 @@ public class Parser {
 				scan.getNext();
 				
 				if(scan.currentToken.tokenStr.equals(","))
+				{
+					System.out.print(" ");
 					scan.getNext();
+				}
 				
 				if(scan.currentToken.tokenStr.equals(";"))
 					System.out.println("Error, reached the end of the line without ) ");
