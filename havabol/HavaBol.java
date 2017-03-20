@@ -46,7 +46,7 @@ public class HavaBol {
 			//	else
 			//		scan.currentToken.printToken();
 			//}
-			
+			System.out.println();
 			HavabolUtilities.printSymbolTable(parser.symbolTable.symbolTable);
 			HavabolUtilities.printStorage(parser.storageManager.storageManager);
 			
