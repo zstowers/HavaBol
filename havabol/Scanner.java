@@ -635,6 +635,7 @@ public class Scanner {
 		
 	//	System.out.println(Scanner.iSourceLineNr);
 		getTokenNoReturn();
+	//	getNext();
 		
 		
 		
