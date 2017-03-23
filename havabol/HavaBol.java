@@ -34,7 +34,7 @@ public class HavaBol {
 			
 	//		for(int i = 0; i < 69; i++)
 	//		{
-				parser.statement(true);
+				parser.statementTest();
 				//scan.currentToken.printToken();
 	//		}
 			//scan.currentToken.printToken();

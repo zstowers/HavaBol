@@ -82,20 +82,7 @@ public class Scanner {
 		//Assign the current Token 
 		currentToken = nextToken;
 		
-		//System.out.println("In scanner, current Token is " + currentToken.tokenStr);
-		
-		// If there were any blank lines or lines with comments, print them out.  This helps keep 
-		// everything in order and helps with debugging 
-//		if(numBlanks > 0)
-//		{
-//			blankLineNr = (iSourceLineNr + 1) - numBlanks;
-//			for(int i = 0; i < numBlanks; i++)
-//			{
-//				System.out.println("  " + blankLineNr + sourceLineM.get((blankLineNr - 1)));
-//				blankLineNr++;
-//			}
-//			numBlanks = 0;
-//		}
+
 		
 		//return if there are no more tokens 
 		if(currentToken.primClassif == 6)

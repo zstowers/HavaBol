@@ -24,7 +24,7 @@ public class SymbolTable {
     **/
     public static Hashtable<String, HashMap<String, STEntry>> table = new Hashtable<>();
     
-    //Global symbol table
+    static //Global symbol table
     HashMap<String, STEntry> symbolTable = new HashMap<>();
     
     int VAR_ARGS;
@@ -97,7 +97,7 @@ public class SymbolTable {
  * @return      null if the specified symbol does not contain a STEntry in the table.
  * @return      symbolTable.get(symbol), the corresponding STEntry in the table.
 **/
-    STEntry getSymbol(String symbol){
+    public static STEntry getSymbol(String symbol){
         if( symbolTable.containsKey(symbol) )
             return symbolTable.get(symbol);
        // else

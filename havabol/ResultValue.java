@@ -18,6 +18,12 @@ public class ResultValue {
 		this.terminatingStr = "";
 	}
 
+
+	@Override
+	public String toString() {
+		return value;
+	}
+
 //	public String getType() {
 //		return type;
 //	}

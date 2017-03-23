@@ -25,7 +25,6 @@ public class Numeric {
 		
 		strValue = result.value;
 		
-		
 		if(isInt(strValue)){
 			type = 2;
 			integerValue = getIntegerValue(strValue);
