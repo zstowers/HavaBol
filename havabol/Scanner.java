@@ -21,6 +21,7 @@ public class Scanner {
 	public static boolean printLine = false;		//Prints the entire line when true
 	public int numBlanks = 0;				//tells the scanner if there were any number of blank lines 
 	 										//that need to be printed before printing the current line 
+	HavabolUtilities utility;
 
 		
 		
@@ -29,6 +30,9 @@ public class Scanner {
 		this.sourceFileNm = sourceFileNm;
 		this.symbolTable = symbolTable;
 		sourceLineM = new ArrayList<String>();
+		utility = new HavabolUtilities();
+		
+		
 			
 		//populate sourceLineM
 		String line;
@@ -171,6 +175,9 @@ public class Scanner {
 		nextToken.iSourceLineNr = iSourceLineNr;
 		assignToken(currentToken);
 		
+		if(Parser.bShowToken == true)
+			System.out.println("/t/t..." + currentToken.tokenStr);
+			
 		return currentToken.tokenStr;
 	}
 
@@ -265,7 +272,7 @@ public class Scanner {
 		
 		char firstChar = token.tokenStr.charAt(0);
 		
-		STEntry entry = symbolTable.getSymbol(token.tokenStr);
+		STEntry entry = SymbolTable.getSymbol(token.tokenStr);
 		
 		if(entry != null)
 		{

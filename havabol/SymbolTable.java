@@ -12,9 +12,9 @@ import java.util.Hashtable;
 *    the actual Symbol Tables internal to the Symbol Table Class.
 *    
 *    The Scanner uses the Symbol Table Class' information:
-*       • Operand re-classification as a CONTROL (e.g., if, else, for, while) FUNCTION, or OPERATOR
-*       • Whether the identifier has been declared
-*       • Static Scope information
+*       Operand re-classification as a CONTROL (e.g., if, else, for, while) FUNCTION, or OPERATOR
+*       Whether the identifier has been declared
+*       Static Scope information
 * <p>
 **/
 public class SymbolTable {

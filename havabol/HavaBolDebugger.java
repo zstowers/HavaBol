@@ -63,9 +63,7 @@ public class HavaBolDebugger {
 		}
 	}
 
-	public static void main(String[] args) {
-		HavaBolDebugger h1 = new HavaBolDebugger(args);
-	}
+	
 
 	@Override
 	public String toString() {

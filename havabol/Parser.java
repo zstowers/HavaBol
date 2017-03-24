@@ -17,6 +17,10 @@ public class Parser {
 	private static final String[] comparisonOperators = {"==", ">", ">=", "<", "<=", "!="}; //logical operators
 	private static final String separators = "(),:;[]";		//string to check for separators 
 	
+	public static boolean bShowToken = false;
+	public static boolean bShowAssign = false;
+	public static boolean bShowExpr = false;
+	
 	public Parser(Scanner scan, SymbolTable symbolTable, StorageManager storageManager) throws Exception
 	{
 		this.scan = scan;
@@ -39,6 +43,57 @@ public class Parser {
 		
 		while(!scan.getNext().isEmpty())
 		{
+			//check for debugging aids 
+			if(scan.currentToken.tokenStr.equals("debug"))
+			{
+				scan.getNext();
+				String debugType = scan.currentToken.tokenStr;
+				scan.getNext();
+				String debugOnOff = scan.currentToken.tokenStr;
+				
+				
+				
+				switch(debugType)
+				{
+					case "Expr" :
+						if (debugOnOff.equals("on"))
+							bShowExpr = true;
+						else if(debugOnOff.equals("off"))
+							bShowExpr = false;
+						else
+							error("'%s' is not valid for turning debugging on or off", debugType);
+						break;
+				
+					case "Token" :
+						if (debugOnOff.equalsIgnoreCase("on"))
+							bShowToken = true;
+						else if(debugOnOff.equals("off"))
+							bShowToken = false;
+						else
+							error("'%s' is not valid for turning debugging on or off", debugType);
+						break;
+					
+				
+					case "Assign" :
+						if (debugOnOff.equals("on"))
+							bShowAssign = true;
+						else if(debugOnOff.equals("off"))
+							bShowAssign = false;
+						else
+							error("'%s' is not valid for turning debugging on or off", debugType);
+						break;
+				
+					default :
+						error("'%s' is not a valid debugging aid", debugType);
+				}
+				
+				scan.getNext();
+				checkCurrentToken(";");
+				scan.getNext();
+				
+			}
+			
+			
 			//switch based on the first token in the statement 
 			switch(scan.currentToken.primClassif)
 			{
@@ -347,7 +402,6 @@ public class Parser {
 		
 		//get the first expression 
 		resOp1 = expression();
-
 		
 		//get the next token, must be a logical operator  
 		scan.getNext();
@@ -364,7 +418,7 @@ public class Parser {
 			error("Error in evalCondition, expecting an operand, not '%s'", scan.currentToken.tokenStr);
 		
 		resOp2 = expression();
-
+		
 		//If the left operand is a number, compare it with the right operand 
 		if(resOp1.type == INTEGER || resOp1.type == FLOAT)
 		{
@@ -434,6 +488,8 @@ public class Parser {
 		scan.getNext();
 		result.terminatingStr = scan.currentToken.tokenStr;
 		
+		if(bShowExpr == true)
+			System.out.println("\t\t..." + result.value);
 		return result;
 	}
 	
@@ -557,6 +613,7 @@ public class Parser {
 				error("'%s' is not a valid operator", scan.currentToken.tokenStr);
 		}
 		
+		
 		return res;
 	}
 	
@@ -651,6 +708,7 @@ public class Parser {
 				
 				//evaluate the expression 
 				evaluatedExpression = operations();	
+				
 				return evaluatedExpression;
 							
 			case Token.OPERAND :
@@ -691,6 +749,7 @@ public class Parser {
 		
 		}
 	
+
 		return evaluatedExpression;
 	}
 	
@@ -764,6 +823,8 @@ public class Parser {
 		//return result in HavabolUtilities class will handle the result based on the operator string 
 		result = HavabolUtilities.returnResult(this, nOp1, nOp2);
 			
+		if(bShowExpr == true)
+			System.out.println("\t\t..." + result.value);
 		return result;
 	}
 	
@@ -820,6 +881,10 @@ public class Parser {
 		}
 		
 		storageManager.changeValue(targetVariable, value.value);
+		
+		if(bShowAssign == true)
+			System.out.println("\t\t..." + targetVariable + "\t" + value.value);
+		
 	}
 	
 	

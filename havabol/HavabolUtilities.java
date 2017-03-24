@@ -35,7 +35,7 @@ public class HavabolUtilities {
      */
     public static ResultValue returnResult(Parser parser, Numeric leftOp, Numeric rightOp) throws Exception
     {
-    	InfixEvaluation evaluateInfix = new InfixEvaluation(parser);
+    	
     	ResultValue result = new ResultValue();
     	double val1;
     	double val2;

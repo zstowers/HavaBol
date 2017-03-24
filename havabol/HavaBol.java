@@ -25,12 +25,10 @@ public class HavaBol {
 			scan = new Scanner(args[0], globalSymbolTable);
 			parser = new Parser(scan, globalSymbolTable, storageManager);
 			
+			
 			parser.statements();
 				
-			System.out.println();
-			HavabolUtilities.printSymbolTable(parser.symbolTable.symbolTable);
-			HavabolUtilities.printStorage(parser.storageManager.storageManager);
-			
+
 			endTime = System.currentTimeMillis();
 			totalTime = (endTime - startTime) / 1000;
 			
