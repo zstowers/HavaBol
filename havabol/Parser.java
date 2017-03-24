@@ -24,10 +24,18 @@ public class Parser {
 		this.storageManager = storageManager;
 	}
 
+	/**
+	 *  Parses the file based on the first token of the line until there are no more tokens left in the file
+	 *  <p>
+	 *  
+	 * @throws Exception
+	 */
 	
-	public void statementTest() throws Exception
+	public void statements() throws Exception
 	{
-		ResultValue result = null;
+
+		ResultValue result = new ResultValue();
+		
 		
 		while(!scan.getNext().isEmpty())
 		{
@@ -44,8 +52,8 @@ public class Parser {
 							break; 
 					
 						default :
-							System.out.println("Error in statementTest(), " + scan.currentToken.tokenStr + "can't begin a line");
-							break;
+							error("Error in statements(), cannot begin a statement with '%s'", scan.currentToken.tokenStr);
+							
 					}
 					break; // from Token.OPERAND
 					
@@ -65,16 +73,19 @@ public class Parser {
 									break;
 								
 								case "while" :
-									whileStmt(true);
-									break;
+									result = whileStmt(true);
+									if(!result.terminatingStr.equals(";"))
+										error("expected ';', while statment returned '%s'", scan.currentToken.tokenStr);
+									continue;
+									
 								
 								case "else" :
-									//return back to the ifStmt method, it will determine how to handle esle statments
+									//return back to the ifStmt method, it will determine how to handle else statments
 									return;
 								
 								default :
-									System.out.println("Error in statementTest(), " + scan.currentToken.tokenStr + " is not a valid flow statment");
-									break;
+									error("'%s' is not a valid flow token", scan.currentToken.tokenStr);
+									
 							}
 							
 						case Token.END :
@@ -103,8 +114,6 @@ public class Parser {
 	
 	
 	
-	
-	
 	/**
 	 * The parser has hit the token "while"
 	 * <p>
@@ -119,8 +128,10 @@ public class Parser {
 	 * @throws Exception
 	 */
 	
-	public void whileStmt(boolean bExec) throws Exception
+	public ResultValue whileStmt(boolean bExec) throws Exception
 	{
+		ResultValue resCond = new ResultValue();
+		
 		if(bExec == true)
 		{
 			scan.getNext();
@@ -128,12 +139,10 @@ public class Parser {
 			Token startingPoint = scan.currentToken; 
 			
 			//Evaluate the while statement condition 
-			ResultValue resCond =  evalCondition();	
+			resCond = evalCondition();
 			
-			scan.getNext();
-			
-			if(!scan.currentToken.tokenStr.equals(":"))
-				System.out.println("Error in whileStmt, missing a colon, current token is " + scan.currentToken);
+			if(!resCond.terminatingStr.equals(":"))
+				error("Error expected a : after the while statement, returned token is %s", resCond.terminatingStr);
 			
 			
 			if(resCond.value.equals("T"))
@@ -141,7 +150,7 @@ public class Parser {
 				
 				while(resCond.value.equals("T"))
 				{
-					statementTest();
+					statements();
 					//returned endwhile, check the condition again 
 					scan.setPosition(startingPoint.iSourceLineNr, startingPoint.iColPos);
 					scan.getNext();
@@ -150,12 +159,8 @@ public class Parser {
 				}	
 				
 				// resCond returned false, break out of the while loop 
-				whileStmt(false);
-				
-				scan.getNext();
-				if(!scan.currentToken.tokenStr.equals(";"))
-					System.out.println("Error in whileStmt, expected a ; ");
-				
+				resCond = whileStmt(false);
+			
 			}
 			
 			
@@ -167,19 +172,20 @@ public class Parser {
 				
 				//currentToken is endwhile
 				scan.getNext();
-				if(!scan.currentToken.tokenStr.equals(";"))
-					System.out.println("Error in while statement when rescond is false, no semicolon");
+				resCond.terminatingStr = scan.currentToken.tokenStr;
+			
 			}
 			
-			
-			statementTest();
-			
+			return resCond;
+	
 		}  // end of bExec = true
 		
 		
 		// ignore execution of the while statement and move to the statement after the correct endwhile
 		if(bExec == false)
 		{
+			ResultValue falseResult = new ResultValue();
+			
 			while(!scan.currentToken.tokenStr.equals("endwhile"))
 			{
 				if(scan.currentToken.tokenStr.equals("while"))
@@ -190,14 +196,18 @@ public class Parser {
 				scan.getNext();
 			}
 			
-			//token is endwhile
-			return;
+			//token is endwhile, get the next token
+			scan.getNext();
+			
+			falseResult.terminatingStr = scan.currentToken.tokenStr;
+			
+			return falseResult;
+			
 		}
 		
-		
+		return null;
+	
 	}
-	
-	
 	
 	
 	/**
@@ -209,123 +219,116 @@ public class Parser {
 	 * @throws Exception 
 	 */
 	
-	public void ifStmt(boolean bExec) throws Exception
-	{
-		
-		if(bExec == true)
+	
+		public void ifStmt(boolean bExec) throws Exception
 		{
-			scan.getNext();
-			//evaluate the condition  
-			ResultValue resCond = evalCondition();
-
-			//make sure the next token is a : 
-			scan.getNext();
 			
-			if(!scan.currentToken.tokenStr.equals(":"))
-				System.out.println("Error in ifStmt, " + scan.currentToken.tokenStr + " does not equal :");
-			
-			
-			//conditional statement was true 
-			if(resCond.value.equals("T"))
+			if(bExec == true)
 			{
-				while(!scan.currentToken.tokenStr.equals("endif"))
+				scan.getNext();
+				//evaluate the condition  
+				ResultValue resCond = evalCondition();
+
+				//make sure the next token is a : 
+				if(!resCond.terminatingStr.equals(":"))
+					System.out.println("Error in ifStmt, " + scan.currentToken.tokenStr + " does not equal :");
+				
+				//conditional statement was true 
+				if(resCond.value.equals("T"))
 				{
-					statementTest();
+					while(!scan.currentToken.tokenStr.equals("endif"))
+					{
+						statements();
+						
+						//if "else" was returned, need to skip
+						if(scan.currentToken.tokenStr.equals("else"))
+							ifStmt(false);
+					}
 					
-					//if "else" was returned, need to skip
-					if(scan.currentToken.tokenStr.equals("else"))
-						ifStmt(false);
+					//currentToken is "endif", make sure the next token is ; 
+					scan.getNext();
+					
+					checkCurrentToken(";");
+				
 				}
 				
-				//currentToken is "endif", make sure the next token is ; 
-				scan.getNext();
-				
-				if(!scan.currentToken.tokenStr.equals(";"))
-					System.out.println("Error in ifStmt, current token should be ;, not " + scan.currentToken.tokenStr);
-				
-			}
-			
-			//conditional statement was false 
-			else if(resCond.value.equals("F"))
-			{
-				
-				while(!scan.currentToken.tokenStr.equals("else"))
+				//conditional statement was false 
+				else if(resCond.value.equals("F"))
 				{
+					
+					while(!scan.currentToken.tokenStr.equals("else"))
+					{
+						scan.getNext();
+						//if you hit another if statement, skip it
+						if(scan.currentToken.tokenStr.equals("if"))
+						{
+							while(!scan.currentToken.tokenStr.equals("endif"))
+								scan.getNext();
+							//get the token after the endif 
+							scan.getNext();
+						}
+						
+						//skip to the else statement, if there is no else just skip the if statement 
+						//there was no else 
+						if(scan.currentToken.tokenStr.equals("endif"))
+						{
+							scan.getNext();
+							checkCurrentToken(";");
+							return;
+						}
+						
+					}
+				
+					//current token is else 
 					scan.getNext();
-					//if you hit another if statement, skip it
+					
+					checkCurrentToken(":");
+					
+					//execute the else portion of the if statmement
+					while(!scan.currentToken.tokenStr.equals("endif"))
+					{
+						statements();
+					}
+					
+					//endif, check for a ; 
+					scan.getNext();
+					
+					checkCurrentToken(";");
+					
+		
+				}
+				
+				//finished with the execution of the if statement, get the next statement 
+				statements();
+			}  // end of bExec is true
+			
+			
+			// don't execute any statement until you get to the correct endif statement 
+			else if(bExec == false)
+			{
+				//keep grabbing tokens until you find the correct endif
+				while(!scan.nextToken.tokenStr.equals("endif"))
+				{
+					//need to get the matching endif if you hit another if statement 
 					if(scan.currentToken.tokenStr.equals("if"))
 					{
 						while(!scan.currentToken.tokenStr.equals("endif"))
 							scan.getNext();
-						//get the token after the endif 
-						scan.getNext();
 					}
 					
-					//skip to the else statement, if there is no else just skip the if statement 
-					//there was no else 
-					if(scan.currentToken.tokenStr.equals("endif"))
-					{
-						scan.getNext();
-						if(!scan.currentToken.tokenStr.equals(";"))
-							System.out.println("Error in ifStmt, missing a semicolon");
-						return;
-					}
-					
-				}
-			
-				//current token is else 
-				scan.getNext();
-				
-				if(!scan.currentToken.tokenStr.equals(":"))
-					System.out.println("Error in ifStmt, missing a ; in the false part, current token is " + scan.currentToken.tokenStr);
-				
-				//execute the else portion of the if statmement
-				while(!scan.currentToken.tokenStr.equals("endif"))
-				{
-					statementTest();
+					scan.getNext();
 				}
 				
-				//endif, check for a ; 
+				//next Token is endif
 				scan.getNext();
 				
-				if(!scan.currentToken.tokenStr.equals(";"))
-					System.out.println("In if statement, missing a ;, current token is " + scan.currentToken.tokenStr);
-	
-			}
-			
-			//finished with the execution of the if statement, get the next statement 
-			statementTest();
-		}  // end of bExec is true
-		
-		
-		// don't execute any statement until you get to the correct endif statement 
-		else if(bExec == false)
-		{
-			//keep grabbing tokens until you find the correct endif
-			while(!scan.nextToken.tokenStr.equals("endif"))
-			{
-				//need to get the matching endif if you hit another if statement 
-				if(scan.currentToken.tokenStr.equals("if"))
-				{
-					while(!scan.currentToken.tokenStr.equals("endif"))
-						scan.getNext();
-				}
+				return;
 				
-				scan.getNext();
-			}
+			} 	//end of false bExec 
 			
-			//next Token is endif
-			scan.getNext();
-			
-			return;
-			
-		} 	//end of false bExec 
+		}
 		
-	}
-	
-	
-	
-	
+		
 	
 	/**
 	 * Evaluates the result of an if or while statement and returns the result of the operation 
@@ -350,7 +353,7 @@ public class Parser {
 		scan.getNext();
 		
 		if(searchForValue(comparisonOperators, scan.currentToken.tokenStr) == false)
-			System.out.println("Error in evalCondition, " + scan.currentToken.tokenStr + " is not a valid comparison operator");
+			error("Error in evalCondition, '%s' is not a valid comparison operator", scan.currentToken.tokenStr);
 		
 		compOperator = scan.currentToken.tokenStr;
 		
@@ -358,7 +361,7 @@ public class Parser {
 		scan.getNext();
 		
 		if(scan.currentToken.primClassif != Token.OPERAND)
-			System.out.println("Error in evalCondition, expecting an operand, not " + scan.currentToken.tokenStr);
+			error("Error in evalCondition, expecting an operand, not '%s'", scan.currentToken.tokenStr);
 		
 		resOp2 = expression();
 
@@ -422,10 +425,14 @@ public class Parser {
 					break;
 			
 				default :
-					System.out.println("Error in evalCondition, " + compOperator + "is not a valid comparison operator");
+					error("Error in evalCondition, '%s' is not a valid comparison operator", compOperator);
 					break;
 			}
 		}
+		
+		//get the token that ended the line 
+		scan.getNext();
+		result.terminatingStr = scan.currentToken.tokenStr;
 		
 		return result;
 	}
@@ -440,8 +447,6 @@ public class Parser {
 	 */
 	public void builtInFunctions() throws Exception
 	{
-		
-		
 		//switch based on current token 
 		switch(scan.currentToken.tokenStr)
 		{
@@ -452,7 +457,7 @@ public class Parser {
 			//future functions
 				
 			default :
-				System.out.println("Error in builtInFunctions, " + scan.currentToken.tokenStr + " is not a built-in function");
+				error("Error in builtInFunctions, '%s' is not a built-in function", scan.currentToken.tokenStr);
 				break;
 				
 		}
@@ -470,12 +475,10 @@ public class Parser {
 	public void printFunction() throws Exception
 	{
 		ResultValue result = new ResultValue();
-		String resultString = "";
-		
+	
 		scan.getNext();
-		
-		if(!scan.currentToken.tokenStr.equals("("))
-			System.out.println("Error in the print function, " + scan.currentToken.tokenStr + "is not equal to (");
+	
+		checkCurrentToken("(");
 		
 		scan.getNext();
 		
@@ -483,7 +486,7 @@ public class Parser {
 		{
 			//if you hit a ; before the right paren it is an error 
 			if(scan.currentToken.tokenStr.equals(";"))
-				System.out.println("Error in print function");
+				error("Error in print function, ';' encountered before a ')'");
 			
 			//if you hit a , need to add a space 
 			if(scan.currentToken.tokenStr.equals(","))
@@ -508,8 +511,7 @@ public class Parser {
 		
 		//currentToken is a  ) 
 		scan.getNext();
-		if(!scan.currentToken.tokenStr.equals(";"))
-			System.out.println("Error in printFunction, missing a ;");
+		checkCurrentToken(";");
 		
 		return;
 		
@@ -533,7 +535,8 @@ public class Parser {
 		// getIdentifier method will handle the error if it is not an identifier
 		// make sure the variable has been declared 
 		if(StorageManager.isDeclared(scan.currentToken.tokenStr) == false)
-			System.out.println("Error in assignmentStmt, current token has not been declared");
+			error("'%s' has not been declared", scan.currentToken.tokenStr);
+			
 		
 		variableStr = scan.currentToken.tokenStr;
 		
@@ -551,7 +554,7 @@ public class Parser {
 				break;
 				
 			default :
-				System.out.println("Error, " + operatorStr + " is not a valid assignment operator ");
+				error("'%s' is not a valid operator", scan.currentToken.tokenStr);
 		}
 		
 		return res;
@@ -563,18 +566,20 @@ public class Parser {
 	 * <p>
 	 * 
 	 * @return The value of the identifer as a string, as well as its data type 
+	 * @throws Exception 
 	 */
-	public ResultValue returnValue()
+	public ResultValue returnValue() throws Exception
 	{
 		ResultValue result = new ResultValue();
 		
 		
 		if(scan.currentToken.primClassif != Token.OPERAND)
-			System.out.println("Error in returnValue(), " + scan.currentToken.tokenStr + " is not an operand");
+			error("Error in returnValue(), '%s' is not an operand", scan.currentToken.tokenStr);
 		
 		
 		if(scan.currentToken.subClassif == Token.IDENTIFIER)
 			result = getIdentifier(scan.currentToken.tokenStr);
+		
 		else
 		{
 			result.value = scan.currentToken.tokenStr;
@@ -592,20 +597,21 @@ public class Parser {
 	 * 
 	 * @param variableName	The name of the variable that contains the value that we are attempting to access
 	 * @return  value and data type of the identified variable 
+	 * @throws Exception if variable has not been declared  
 	 */
-	public ResultValue getIdentifier(String variableName)
+	public ResultValue getIdentifier(String variableName) throws Exception
 	{
 		ResultValue result = new ResultValue();
-		STEntry varEntry = symbolTable.getSymbol(variableName);
+		STEntry varEntry = SymbolTable.getSymbol(variableName);
 		StorageEntry storageEntry = null;
 		
 		
 		if(varEntry == null)
-			System.out.println("Error, variable has not been declared");
+			error("Error, variable, '%s' has not been declared", variableName);
 		
 		else
 		{
-			storageEntry = storageManager.getStorageEntry(variableName);
+			storageEntry = StorageManager.getStorageEntry(variableName);
 			result.value = storageEntry.variableValue;
 			result.type = storageEntry.dataType;
 		}
@@ -613,27 +619,22 @@ public class Parser {
 		return result;
 	}
 	
+	
 	/**
 	 *  parses the expression and returns a value
 	 *  <p>
-	 *  @return	result value with the value and datatype of the calculated expression  
+	 *  @return	result value with the value and datatype of the calculated expression 
+	 *  @throws Exception if the wrong type of variable is encountered 
 	 */
 	
 	public ResultValue expression() throws Exception
 	{
 		ResultValue evaluatedExpression = new ResultValue();
-		ResultValue leftOperand = new ResultValue();
-		ResultValue returnedIdentifier = new ResultValue();
-		String operatorString;
-		String variableValue = "";
-		StorageEntry value = null;
-		
 		
 		switch(scan.currentToken.primClassif)
 		{
 			
 			case Token.OPERATOR :
-				
 				//get the right side of the expression 
 				scan.getNext();
 				
@@ -646,13 +647,12 @@ public class Parser {
 				
 				//must be an operand 
 				if(scan.currentToken.primClassif != Token.OPERAND)
-					System.out.println("Error, " + scan.currentToken.tokenStr + " is not an operand");
+					error("Error, '%s' is not an operand", scan.currentToken.tokenStr);
 				
 				//evaluate the expression 
 				evaluatedExpression = operations();	
 				return evaluatedExpression;
 							
-			
 			case Token.OPERAND :
 				
 			//is it an identifier? 
@@ -686,7 +686,7 @@ public class Parser {
 				break;
 				
 			default :
-				System.out.println("Error " + scan.currentToken.tokenStr + "is not valid in test expression");
+				error("Error, '%s' is not valid in test expression", scan.currentToken.tokenStr);
 				break;
 		
 		}
@@ -700,7 +700,7 @@ public class Parser {
 	 * <p>
 	 * 
 	 * @return the result and data type of the operation based on the left operand
-	 * @throws Exception
+	 * @throws Exception if an invalid operator is encountered 
 	 */
 	public ResultValue operations() throws Exception
 	{
@@ -711,7 +711,6 @@ public class Parser {
 		ResultValue resOp1;
 		ResultValue resOp2 = null;
 		String operatorStr;
-		String variableStr;
 		String negativeString = "-";
 		
 		if(scan.currentToken.subClassif == Token.IDENTIFIER)
@@ -746,7 +745,7 @@ public class Parser {
 		scan.getNext();
 		
 		if(scan.currentToken.primClassif != Token.OPERATOR)
-				System.out.println("Error in operations(), expecting an operator, current token is " + scan.currentToken.tokenStr);
+				error("Error in operations(), expecting an operator, current token is '%s'", scan.currentToken.tokenStr);
 			
 		
 		// this is the left operand 
@@ -763,10 +762,11 @@ public class Parser {
 		nOp2 = new Numeric(this, resOp2, operatorStr, "2nd Operand");
 			
 		//return result in HavabolUtilities class will handle the result based on the operator string 
-		result = HavabolUtilities.returnResult(nOp1, nOp2);
+		result = HavabolUtilities.returnResult(this, nOp1, nOp2);
 			
 		return result;
 	}
+	
 	
 	/**
 	 * Searches for a certain value in a string array 
@@ -791,24 +791,7 @@ public class Parser {
 	
 	
 	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	
-	
-	/**
+/**
 	 * Assigns or replaces the value of a variable in the storage manager 
 	 * <p>
 	 * 
@@ -845,7 +828,7 @@ public class Parser {
 	 *  table and creates and initializes the variable in the storage manager. 
 	 *  <p>
 	 *  
-	 *  @throws Exception 
+	 *  @throws Exception if declaration type is not 'Int', 'Float', 'String', 'Bool', or 'Date' 
 	 */
 	public void declareVariable() throws Exception
 	{
@@ -875,7 +858,7 @@ public class Parser {
 				dataType = DATE;
 				break;
 			default :
-				System.out.println("Error in declare variable, " + typeString + " is not a valid datatype");
+				error("Error in declare variable, '%s' is not a valid datatype", typeString);
 				break;
 		}
 		
@@ -884,10 +867,10 @@ public class Parser {
 		variableName = scan.currentToken.tokenStr;
 		 
 		if(SymbolTable.getSymbol(typeString) == null)
-			System.out.println("Error, " + typeString + " is not a valid declaration type");
+			error("Error, 's' is not a valid declaration type", typeString);
 		
 		if(SymbolTable.getSymbol(variableName) != null)
-			System.out.println("Error, " + variableName + " has already been declared");
+			error("Error, '%s' has already been declared", variableName);
 		
 		
 		if(scan.nextToken.tokenStr.equals("="))
@@ -907,11 +890,37 @@ public class Parser {
 		scan.getNext();
 		
 		//make sure the current Token is a ; 
-		if(!scan.currentToken.tokenStr.equals(";"))
-			System.out.println("Error in declareVariable, missing a semicolon");
+		checkCurrentToken(";");
 		
 		return;
 		
+	}
+	
+	/**
+	 * Checks the current token for a value that the calling function was expecting  
+	 * @param token 	The token that we are comparing the current token to 
+	 * @throws Exception If the tokens are not equal to each other 
+	 */
+	public void checkCurrentToken(String token) throws Exception
+	{
+		if(!scan.currentToken.tokenStr.equals(token))
+			error("Current token is '%s', it should be %s", scan.currentToken.tokenStr, token);
+	}
+	
+	
+	
+	/**
+	 * Throws an exception that will print the line number as well as a diagnostic message 
+	 * @param fmt	the diagnostic string 
+	 * @param varArgs	
+	 * @throws Exception
+	 */
+	public void error(String fmt, Object... varArgs) throws Exception
+	{
+		String diagnosticTxt = String.format(fmt, varArgs);
+		throw new ParserException(Scanner.iSourceLineNr, diagnosticTxt, scan.sourceFileNm);
+	
+	
 	}
 		
 

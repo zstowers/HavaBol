@@ -56,10 +56,7 @@ public class Scanner {
 		nextToken = new Token();
 			
 		//Get the first token into nextToken
-		//this.getFirst();
 		getTokenNoReturn();
-		printLine = true;
-		
 	}
 	
 
@@ -82,23 +79,12 @@ public class Scanner {
 		//Assign the current Token 
 		currentToken = nextToken;
 		
-
-		
 		//return if there are no more tokens 
 		if(currentToken.primClassif == 6)
 			return "";
 		
 		
 		nextToken = new Token();
-		
-		
-		//The last token on the previous line has already been collected and printed so print 
-		//print the line 
-//		if(printLine == true)
-//		{
-//			System.out.printf("  %d  %s\n", (iSourceLineNr + 1), sourceLineM.get(iSourceLineNr));
-//			printLine = false;
-//		}
 		
 		//end of the line, move to the next one 
 		if(iColPos == textCharM.length)
@@ -107,7 +93,6 @@ public class Scanner {
 		//check for a blank line or comment 
 		if(iColPos == 0)
 		{
-			//while(checkBlank() == true)
 			while(HavabolUtilities.checkBlank(nextToken))
 			{
 				numBlanks++;
@@ -153,15 +138,10 @@ public class Scanner {
 		iStartingIndex = iColPos;
 		nextToken.iColPos = iStartingIndex;
 		
-		
-		
 		//The first character in the string is a delimiter 
 		if(delimiters.indexOf(currentChar) >= 0)
-		{
-			//System.out.println("Current Char = " + currentChar);
 			handleDelimiters(currentChar, iStartingIndex);
-		}
-	
+		
 		//First char  is not a delimiter, keep going through the characters until you hit a space, tab, delimiter,
 		//or end of the line 
 		else
@@ -169,14 +149,10 @@ public class Scanner {
 			//keep going through the characters until you hit a space 
 			while(currentChar != ' ' && currentChar != '\t')
 			{
-				
 				//don't increment the column position if you hit a delimiter so that it will be picked 
 				//up on the next iteration 
 				if(delimiters.indexOf(currentChar) >= 0)
-				{
-					//System.out.println("The delimiter that will cause this break is " + currentChar);
 					break;
-				}
 				
 				else
 				{
@@ -193,9 +169,6 @@ public class Scanner {
 		}
 		
 		nextToken.iSourceLineNr = iSourceLineNr;
-		
-		//System.out.println("In scanner, next token is " + nextToken.tokenStr);
-		
 		assignToken(currentToken);
 		
 		return currentToken.tokenStr;
@@ -294,10 +267,6 @@ public class Scanner {
 		
 		STEntry entry = symbolTable.getSymbol(token.tokenStr);
 		
-		
-		
-		
-
 		if(entry != null)
 		{
 			token.primClassif = entry.primClassif;
@@ -557,7 +526,7 @@ public class Scanner {
 			
 			startingPosition = iColPos;
 			
-			//Move the the first character 
+			//Move to the first character 
 			while(textCharM[startingPosition] == ' ')
 			{
 				iColPos++;
@@ -566,13 +535,11 @@ public class Scanner {
 			
 			currentChar = textCharM[iColPos];
 			
-			
 			//Get the token 
 			while(currentChar != ' ')
 			{
 				if(delimiters.indexOf(currentChar) >= 0)
 				{
-				
 					//is it a string?
 					if(currentChar == '\"' || currentChar == '\'')
 					{
@@ -600,14 +567,14 @@ public class Scanner {
 			nextToken.iColPos = iColPos;
 			nextToken.iSourceLineNr = iSourceLineNr;
 			assignNextTokenString(startingPosition);
-			//iColPos++;
+			
 		}	
 		
 	
 		
 	/**
 	 * Sets the position in the file.  
-	 * Used when you encounter a while loop and a for loop
+	 * Used in the parser when you encounter a while loop and a for loop
 	 * @throws Exception 
 	 */
 	public void setPosition(int iSourceLineNr, int iColPos) throws Exception
@@ -619,14 +586,8 @@ public class Scanner {
 		Scanner.iColPos = iColPos;
 		Scanner.textCharM = sourceLineM.get(Scanner.iSourceLineNr).toCharArray();
 		
-		
-	//	System.out.println(Scanner.iSourceLineNr);
 		getTokenNoReturn();
-	//	getNext();
-		
-		
-		
-		
+	
 	}
 		
 		

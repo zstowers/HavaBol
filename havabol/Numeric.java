@@ -28,11 +28,15 @@ public class Numeric {
 		if(isInt(strValue)){
 			type = 2;
 			integerValue = getIntegerValue(strValue);
+			// possibly remove the below statements 
+			doubleValue = (double) integerValue;
 		}
 		
 		else if(isFloat(strValue)){
 			type = 3;
 			doubleValue = getDoubleValue(strValue);
+			//possibly remove the below stmt 
+			integerValue = (int) doubleValue;
 		}
 		
 		
@@ -73,73 +77,7 @@ public class Numeric {
 	}
 	
 	/**
-	 * 
-	 * @return
-	 */
-	public static double doubleArithmetic(double op1, double op2, String operator)
-	{
-		switch(operator)
-		{
-			case "^" :
-				return Math.pow(op1, op2);
-			
-			case "+" :
-				return op1 + op2;
-				
-			case "-" :
-				return op1 - op2;
-			
-			case "*" :
-				return op1 * op2;
-			
-			case "/" :
-				return op1 / op2;
-			
-			default :
-				System.out.println("This is a double math error");
-				return 0.0;
-			
-		}
-	
-	}
-	
-	/**
-	 * 
-	 * @param op1
-	 * @param op2
-	 * @param operator
-	 * @return
-	 */
-	public static int intArithmetic(int op1, int op2, String operator)
-	{
-		switch(operator)
-		{
-			case "^" :
-				return (int) Math.pow(op1, op2);
-			
-			case "+" :
-				return op1 + op2;
-				
-			case "-" :
-				return op1 + op2;
-			
-			case "*" :
-				return op1 * op2;
-			
-			case "/" :
-				return op1 / op2;
-			
-			default :
-				System.out.println("this is an integer math error, " + operator + " is not an operator");
-				return 0;
-			
-		}
-	
-	}
-	
-	
-	/**
-	 * Takes a String and verify's it as a Float or a Int.
+	 * Takes a String and verifies it as a Float or a Int.
 	 * @param str
 	 * @returns boolean
 	 */
