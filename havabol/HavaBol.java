@@ -32,6 +32,10 @@ public class HavaBol {
 			endTime = System.currentTimeMillis();
 			totalTime = (endTime - startTime) / 1000;
 			
+			
+			HavabolUtilities.printSymbolTable(SymbolTable.symbolTable);
+			HavabolUtilities.printStorage(StorageManager.storageManager);
+			
 			System.out.println("BUILD SUCCESSFUL (total time: "+ totalTime + " seconds)");
 		
 		}

@@ -38,17 +38,17 @@ public class Numeric {
 			//possibly remove the below stmt 
 			integerValue = (int) doubleValue;
 		}
-		
-		
-		
-		
-		
+			
 		else{
 			NumberFormatException e = new NumberFormatException();
 			//System.err.printf("Line %d Invalid numeric constant: %s  %s  %s %d: %s", scan.iSourceLineNr, strValue, expr, operandStr, e);
 			e.printStackTrace();
 			System.exit(-1);
-		}	
+		}
+		
+	}
+	public Numeric(){
+		
 	}
 	
 	/**
@@ -77,7 +77,73 @@ public class Numeric {
 	}
 	
 	/**
-	 * Takes a String and verifies it as a Float or a Int.
+	 * 
+	 * @return
+	 */
+	public static double doubleArithmetic(double op1, double op2, String operator)
+	{
+		switch(operator)
+		{
+			case "^" :
+				return Math.pow(op1, op2);
+			
+			case "+" :
+				return op1 + op2;
+				
+			case "-" :
+				return op1 - op2;
+			
+			case "*" :
+				return op1 * op2;
+			
+			case "/" :
+				return op1 / op2;
+			
+			default :
+				System.out.println("This is a double math error");
+				return 0.0;
+			
+		}
+	
+	}
+	
+	/**
+	 * 
+	 * @param op1
+	 * @param op2
+	 * @param operator
+	 * @return
+	 */
+	public static int intArithmetic(int op1, int op2, String operator)
+	{
+		switch(operator)
+		{
+			case "^" :
+				return (int) Math.pow(op1, op2);
+			
+			case "+" :
+				return op1 + op2;
+				
+			case "-" :
+				return op1 + op2;
+			
+			case "*" :
+				return op1 * op2;
+			
+			case "/" :
+				return op1 / op2;
+			
+			default :
+				System.out.println("this is an integer math error, " + operator + " is not an operator");
+				return 0;
+			
+		}
+	
+	}
+	
+	
+	/**
+	 * Takes a String and verify's it as a Float or a Int.
 	 * @param str
 	 * @returns boolean
 	 */

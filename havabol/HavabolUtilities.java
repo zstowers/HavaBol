@@ -19,9 +19,7 @@ public class HavabolUtilities {
 	
     public HavabolUtilities(){
 	}
-    
-    
-    
+     
     
     /**
      *  Receives two numeric values and performs mathematical operations on them 
@@ -31,11 +29,10 @@ public class HavabolUtilities {
      * @param leftOp value and type of the left operand 
      * @param rightOp value and type of the right operand 
      * @return the calculated expression based on the operator 
-     * @throws Exception if there is an invalid operator type 
      */
-    public static ResultValue returnResult(Parser parser, Numeric leftOp, Numeric rightOp) throws Exception
+    public static ResultValue returnResult(Parser parser, Numeric leftOp, Numeric rightOp)
     {
-    	
+    	InfixEvaluation evaluateInfix = new InfixEvaluation(parser);
     	ResultValue result = new ResultValue();
     	double val1;
     	double val2;
@@ -44,103 +41,112 @@ public class HavabolUtilities {
     	
     	String operator = leftOp.expr;
     	
-    	
     	if(leftOp.type == Token.INTEGER)
     	{
     		result.type = Token.INTEGER;
     		
-    		//cast the integer values to doubles 
-    		val1 = leftOp.doubleValue;
-    		val2 = (double)rightOp.integerValue;
-
-    		dVal = operate(parser, val1, val2, operator);
+    		//check dataType for right operand 
+    		if(rightOp.type != Token.INTEGER)
+    			rightOp.integerValue = Numeric.getIntegerValue(rightOp.strValue);
     		
-    		//convert to an int and store the value as a string 
-    		iVal = (int)dVal;
-    		result.value = String.valueOf(iVal);
+    		switch(leftOp.expr)
+    		{
+    			case "+" :
+    				result.value = String.valueOf(addInt(leftOp.integerValue, rightOp.integerValue));
+    				break;
+    				
+    			case "-" :
+    				result.value = String.valueOf(subInt(leftOp.integerValue, rightOp.integerValue));
+    				break;
+    				
+    			case "*" :
+    				result.value = String.valueOf(mulInt(leftOp.integerValue, rightOp.integerValue));
+    				break;
+    				
+    			case "/" :
+    				result.value = String.valueOf(divInt(leftOp.integerValue, rightOp.integerValue));
+    				break;
+    			
+    			case "^" :
+    				result.value = String.valueOf(intExp(leftOp.integerValue, rightOp.integerValue));
+    				break;
+    				
+    			default :
+    				System.out.println("Error in Utilities, not valid operator");
+    				
+    		}    		
     		
-    		return result;
-    	}	
+    	}
     	
-    	
+    	//token is a float 
     	else if(leftOp.type == Token.FLOAT)
     	{
     		result.type = Token.FLOAT;
     		
-    		val1 = leftOp.doubleValue;
-    		val2 = rightOp.doubleValue;
+    		if(rightOp.type != Token.FLOAT)
+    			rightOp.doubleValue = Numeric.getDoubleValue(rightOp.strValue);
     		
-    		dVal = operate(parser, val1, val2, operator);
-    		result.value = String.valueOf(dVal);
-    		
-    		return result;
+    		switch(leftOp.expr)
+    		{
+    			case "+" :
+    				result.value = String.valueOf(add(leftOp.doubleValue, rightOp.doubleValue));
+    				break;
+				
+    			case "-" :
+    				result.value = String.valueOf(sub(leftOp.doubleValue, rightOp.doubleValue));
+    				break;
+				
+    			case "*" :
+    				result.value = String.valueOf(mul(leftOp.doubleValue, rightOp.doubleValue));
+    				break;
+				
+    			case "/" :
+    				result.value = String.valueOf(div(leftOp.doubleValue, rightOp.doubleValue));
+    				break;
+			
+    			case "^" :
+    				result.value = String.valueOf(exp(leftOp.doubleValue, rightOp.doubleValue));
+    				break;
+				
+    			default :
+    				System.out.println("Error in Utilities, not valid operator");
+		
+    		}
     	}
-    	
-    	else
-    	{
-    		parser.error("In Havabol Utilities, '%s' is not a valid operator", operator);
-    		return null;
-    	}
-    		
-    }
-    
-    
-    
-    
-    /**
-     * Calculates a simple math expression based on a single operator
-     * <p>  
-     * @param val1	left operand 
-     * @param val2	right operand 
-     * @param operator	math operator 
-     * @return	result of the simple expression 
-     * @throws Exception If the operator is invalid 
-     */
-    public static double operate(Parser parser, double val1, double val2, String operator) throws Exception
-    {
-    	double result = 0.0;
-    	
-    	switch(operator)
-    	{
-    		case "+" :
-    			return add(val1, val2);
-    		
-    		case "-" :
-    			return sub(val1, val2);
-    		
-    		case "*" :
-    			return mul(val1, val2);
-    			
-    		case "/" :
-    			return div(val1, val2);
-    		
-    		case "^" :
-    			return exp(val1, val2);
-    		
-    		default :
-    			parser.error("error, '%s' is not a valid operator", operator);
-    	}
-    	
+	
     	return result;
     }
     
-    
+    public static ResultValue calculateExp(Parser parser, String term, int type){
+    	Numeric n1 = new Numeric();
+    	InfixEvaluation evaluateInfix = new InfixEvaluation(parser);
+    	ResultValue result = new ResultValue();
+    	if(type == Token.INTEGER){
+    		result.value = String.valueOf(n1.getIntegerValue(String.valueOf(evaluateInfix.Calculate(term))));
+    		result.type = 2;
+    	}
+    	else if (type == Token.FLOAT){
+    		result.value = String.valueOf(evaluateInfix.Calculate(term));
+    		result.type = 3;
+    	}else if (type == Token.STRING){
+    		result.value = term;
+    		result.type = Token.STRING;
+    	}
+   
+    	return result; 	
+    }
     
     /**
-     * Compares two numbers and returns the result based on a logical operator
-     * <p>
-     *   
-     * @param parser	For error handling 
-     * @param resOp1	first number 
-     * @param resOp2 	second number 
-     * @param operator 	logical operator 
-     * @return			true or false, based on the operator 
-     * @throws Exception if the operator is an invalid logical operator 
+     * compare mechanics
+     * returns true or false
      */
-    public static boolean compareNumerics(Parser parser, ResultValue resOp1, ResultValue resOp2, String operator) throws Exception
+    
+    public static boolean compareNumerics(Parser parser, ResultValue resOp1, ResultValue resOp2, String operator)
     {
     	double val1 = Numeric.getDoubleValue(resOp1.value);
     	double val2 = Numeric.getDoubleValue(resOp2.value);
+    	
+    	
     	
     	switch(operator)
     	{
@@ -181,17 +187,51 @@ public class HavabolUtilities {
     				return false;
     		
     		default :
-    			parser.error("Error in compare Numerics, '%s' is not a valid logical operator", operator);
+    			System.out.println("Error in compare Numerics, " + operator + " is not valid");
     			return false;
+    		
+    			
     		
     	}
     }
     
     
+    
     /**
+     * Adds two integers together
+     * <p> 
+     * @param a		first integer 
+     * @param b 	second integer 
+     * @return		sum of a and b
+     */
+
+    public static int addInt(int a, int b){
+		return a+b;
+	}
+
+	
+	
+	
+	
+	/**
+	 * Subtracts two integers
+	 * <p> 
+	 * @param a		first integer 
+	 * @param b		second integer 
+	 * @return		difference of a and b 
+	 */
+
+    public static int subInt(int a, int b){
+		return a-b;
+	}
+	
+	
+	
+	
+	
+	/**
 	 * Subtracts two double values 
 	 * <p>
-	 * 
 	 * @param a		first double 
 	 * @param b		second double 
 	 * @return		difference of a and b 
@@ -204,7 +244,6 @@ public class HavabolUtilities {
 	/**
 	 * Adds two double values 
 	 * <p>
-	 * 
 	 * @param a		first double 
 	 * @param b		second double 
 	 * @return		sum of a and b 
@@ -216,22 +255,36 @@ public class HavabolUtilities {
 	
 	/**
 	 * Computes the value of a base and an exponent
-	 * <p>
-	 *  
+	 * <p> 
 	 * @param a 	base 
 	 * @param b		exponent  
 	 * @return		a to the power of b 
 	 */
 	
+	
 	public static double exp(double a, double b){
 		return Math.pow(a,b);
 	}
 	
-		
+	
+	
+	/**
+	 * 
+	 * 
+	 */
+
+	
+	
+	
+	public static int intExp(int a, int b)
+	{
+		return (int) Math.pow(a, b);
+	}
+	
+	
 	/**
 	 * Computes the product of two number
-	 * <p>
-	 *  
+	 * <p> 
 	 * @param a		first double 
 	 * @param b		second double 
 	 * @return		product of a and b 
@@ -240,10 +293,34 @@ public class HavabolUtilities {
 		return a*b;
 	}
 	
+	
+	/**
+	 * 
+	 * 
+	 */
+
+	
+	public static int mulInt(int a, int b)
+	{
+		return a*b;
+	}
+	
+	
+	/**
+	 * 
+	 * 
+	 */
+
+	
+	public static int divInt(int a, int b)
+	{
+		return a/b;
+	}
+	
+	
 	/**
 	 * Computes the quotient of two numbers
 	 * <p>
-	 * 
 	 * @param a		first double value 
 	 * @param b		second double value 
 	 * @return		a divided by b 
@@ -251,81 +328,10 @@ public class HavabolUtilities {
 	public static double div(double a, double b){
 		return a/b;
 	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @return -U
-	 */
-	public static double unaryMinus(double a){
-		return -a;
-	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @param b
-	 * @return boolean
-	 */
-	public static boolean equals(double a, double b){
-		return a == b;
-	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @param b
-	 * @return boolean
-	 */
-	public static boolean lessThan(double a, double b){
-		return (a < b);
-	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @param b
-	 * @return boolean
-	 */
-	public static boolean greaterThan(double a, double b){
-		return (a > b);
-	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @param b
-	 * @return boolean
-	 */
-	public static boolean greaterThanLess(double a, double b){
-		return (a >= b);
-	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @param b
-	 * @return boolean
-	 */
-	public static boolean lessThanLess(double a, double b){
-		return (a <= b);
-	}
-	
-	/**
-	 * 
-	 * @param a
-	 * @param b
-	 * @return boolean
-	 */
-	public static boolean notEqual(double a, double b){
-		return (a != b);
-	}
 
-    
-	/**
+    /**
      *  Checks to see if the line is blank or if the line contains only a comment 
      *  <p>
-     *  
      * @param token			nextToken, it is set to the beginning of the line 
      * @return				true if the line is a blank or comment and false if not 
      * @throws Exception	
@@ -344,6 +350,7 @@ public class HavabolUtilities {
 	
 		else
 			currentChar = Scanner.textCharM[0];
+		
 		
 		//get the first character, if you reach the end of the line, the line contains 
 		//only spaces or tabs and is therefore blank 
@@ -366,6 +373,28 @@ public class HavabolUtilities {
 		
 		//Line is not blank   
 		return false;
+	}
+	
+	
+	/**
+	 * takes two strings and concatenates them
+	 * @return
+	 */
+	public static ResultValue stringConcat(String a, String b, int type){
+		ResultValue result = new ResultValue();
+//		Numeric n1 = new Numeric();
+		result.value = a.concat(b);
+		
+		/*if(n1.isFloat(result.value))
+			result.type = Token.FLOAT;
+		else if(n1.isInt(result.value))
+			result.type = Token.INTEGER;
+		else
+			result.type = Token.STRING;*/
+		
+		result.type = type;
+		
+		return result;
 	}
 	
 	
@@ -394,6 +423,9 @@ public class HavabolUtilities {
 			Scanner.textCharM = Scanner.sourceLineM.get(Scanner.iSourceLineNr).toCharArray();
 	}
 	
+	
+
+	
 	/**
 	 * Formats the error message and throws a scanner exception
 	 * <p> 
@@ -409,10 +441,6 @@ public class HavabolUtilities {
 	}
 	
 	
-	/**
-	 * Used only for debugging purposes, prints the symbol table entries 
-	 * @param map
-	 */
 	public static void printSymbolTable(HashMap<String, STEntry> map)
 	{
 		System.out.println("\t\t Symbol Table\n");
@@ -423,11 +451,6 @@ public class HavabolUtilities {
 		}
 	}
 	
-	
-	/**
-	 *  Used only for debugging purposes, prints the storage manager and the variable values 
-	 * @param map
-	 */
 	public static void printStorage( HashMap<String, StorageEntry> map)
 	{
 		System.out.println("\n\t\t Storage Manager\n");
@@ -442,6 +465,52 @@ public class HavabolUtilities {
 	{
 		
 		return Math.pow(op1, op2);
+		
+	}
+	
+	
+	/**
+	 * 
+	 * @param parser
+	 * @param debugType
+	 * @param debugOnOff
+	 * @throws Exception
+	 */
+	public static void debugInput(Parser parser, String debugType, String debugOnOff) throws Exception
+	{
+		switch(debugType)
+		{
+			case "Expr" :
+				if (debugOnOff.equals("on"))
+					Parser.bShowExpr = true;
+				else if(debugOnOff.equals("off"))
+					Parser.bShowExpr = false;
+				else
+					parser.error("'%s' is not valid for turning debugging on or off", debugType);
+				break;
+		
+			case "Token" :
+				if (debugOnOff.equalsIgnoreCase("on"))
+					Parser.bShowToken = true;
+				else if(debugOnOff.equals("off"))
+					Parser.bShowToken = false;
+				else
+					parser.error("'%s' is not valid for turning debugging on or off", debugType);
+				break;
+			
+		
+			case "Assign" :
+				if (debugOnOff.equals("on"))
+					Parser.bShowAssign = true;
+				else if(debugOnOff.equals("off"))
+					Parser.bShowAssign = false;
+				else
+					parser.error("'%s' is not valid for turning debugging on or off", debugType);
+				break;
+		
+			default :
+				parser.error("'%s' is not a valid debugging aid", debugType);
+		}
 		
 	}
 	

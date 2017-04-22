@@ -173,10 +173,12 @@ public class Scanner {
 		}
 		
 		nextToken.iSourceLineNr = iSourceLineNr;
+		assignToken(nextToken);
 		assignToken(currentToken);
 		
+		
 		if(Parser.bShowToken == true)
-			System.out.println("/t/t..." + currentToken.tokenStr);
+			System.out.println("\t\t..." + currentToken.tokenStr);
 			
 		return currentToken.tokenStr;
 	}
@@ -270,6 +272,14 @@ public class Scanner {
 	public void assignToken(Token token) throws Exception
 	{
 		
+		if(token.tokenStr.equals(""))
+		{
+			token.primClassif = Token.OPERAND;
+			token.subClassif = Token.STRING;
+			return;
+		}
+			
+		
 		char firstChar = token.tokenStr.charAt(0);
 		
 		STEntry entry = SymbolTable.getSymbol(token.tokenStr);
@@ -323,6 +333,13 @@ public class Scanner {
 			}
 		}
 		
+		
+		
+		
+		//Check the token to see if it has already been assigned as a string literal  
+		else if(token.subClassif == 5)
+			return;
+		
 		//Is the token a number?
 		else if(Character.isDigit(firstChar))
 		{
@@ -331,9 +348,8 @@ public class Scanner {
 		}
 		
 		
-		//Check the token to see if it has already been assigned as a string literal  
-		else if(token.subClassif == 5)
-			return;
+		
+		
 		
 		
 		

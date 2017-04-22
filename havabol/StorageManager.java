@@ -154,6 +154,19 @@ public class StorageManager {
 	}
 	
 	
+	/**
+	 * 
+	 */
+	public static boolean isArray(String variableName)
+	{
+		StorageEntry entry = getStorageEntry(variableName);
+		
+		if(entry.valueList == null)
+			return false;
+		else
+			return true;
+	}
+	
 	
 	
 }

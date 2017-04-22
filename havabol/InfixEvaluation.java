@@ -25,7 +25,7 @@ public class InfixEvaluation {
 	
 	public InfixEvaluation(Parser p) {
 
-		errParser = p; //this scanner is used for reference to send errors too
+		errParser = p; //this parser is used for reference to send errors too
 
 	}
 	
@@ -45,7 +45,7 @@ public class InfixEvaluation {
 		
 		String token;
 		term = "(" + term + ")"; //creates end points
-		System.out.println(term);
+
 		getInfixTokens(term);
 		//DEBUG
 		
@@ -110,20 +110,25 @@ public class InfixEvaluation {
 		
 		// we need to check if there is a ^ character
 		// if there is the next character must be a '(' followed by a number,
-		// followed by another ')'	
+		// followed by another ')'
+		
 		for (int i = 0; i < term.length(); i++) {
 			String character = term.substring(i, i + 1);
 			if (character.equals("^")) {
-				term = term.substring(0, i + 1) + "(" + term.substring(i + 1) + ")";
+				// changed on 4/21 
+				// TODO need to check parenthesis  
+				term = term.substring(0, i + 1) + "(" + term.substring(i + 1, i + 2) + ")" + term.substring(i + 2);
 				i += 2;
 			}
 		}
+		
+		//System.out.println("In getInfixTokens, term is " + term);
 
 		// we need to split term on "()*/+-^"
 		char[] chars = term.toCharArray();
 
 		for (int i = 0; i < chars.length; i++) {
-
+			
 			switch (chars[i]) {
 			case '(':
 				tokenFind();
