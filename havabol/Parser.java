@@ -69,10 +69,19 @@ public class Parser {
 
 			switch (scan.currentToken.primClassif) {
 			case Token.OPERAND:
+				
+				// check for the in or notin function 
+				if(scan.nextToken.tokenStr.equals("IN") || scan.nextToken.tokenStr.equals("NOTIN"))
+				{
+					scan.getNext();
+					result = builtInFunctions();
+					break;
+				}
 
 				// switch based on the subclass
 				switch (scan.currentToken.subClassif) {
 				case Token.IDENTIFIER:
+					
 					result = assignmentStmt();
 					break;
 
@@ -93,7 +102,8 @@ public class Parser {
 					switch (scan.currentToken.tokenStr) {
 					case "if":
 						ifStmt(true);
-						break;
+						continue;
+						//break;
 
 					case "while":
 						whileStmt(true);
@@ -117,11 +127,6 @@ public class Parser {
 				case Token.END:
 					// return to the calling function, it will determine how to
 					// handle
-					
-				
-					
-					
-					
 					return;
 
 				}
@@ -139,7 +144,12 @@ public class Parser {
 				break; // from function
 
 			}
+			
+			
+			if(Scanner.iSourceLineNr == Scanner.sourceLineM.size())
+				return;
 		}
+		
 
 	}
 	
@@ -453,7 +463,9 @@ public class Parser {
 			scan.getNext();
 			// evaluate the condition
 			ResultValue resCond = evalCondition();
+			
 
+			
 			// make sure the next token is a :
 			if (!scan.currentToken.tokenStr.equals(":"))
 				scan.getNext();
@@ -533,7 +545,11 @@ public class Parser {
 			// finished with the execution of the if statement, get the next
 			// statement
 			
-			scan.getNext();
+			if(!scan.currentToken.tokenStr.equals(";"))
+				scan.getNext();
+			
+			
+			
 			
 			return;
 			
@@ -593,6 +609,22 @@ public class Parser {
 			
 			return result;
 			
+		}
+		
+		if(scan.nextToken.tokenStr.equals("IN"))
+		{
+			scan.getNext();
+			result = inFunction();
+			scan.getNext();
+			return result;
+		}
+		
+		if(scan.nextToken.tokenStr.equals("NOTIN"))
+		{
+			scan.getNext();
+			result = notInFunction();
+			scan.getNext();
+			return result;
 		}
 		
 		
@@ -737,6 +769,27 @@ public class Parser {
 				returnedResult = maxElemFunction();
 				break;
 				
+			case "dateDiff" :
+				returnedResult = dateDiff();
+				break;
+				
+			case "dateAdj" :
+				returnedResult = dateAdj();
+				break;
+			
+			case "dateAge" :
+				returnedResult = dateAge();
+				break;
+			
+			case "IN" :
+				returnedResult = inFunction();
+				break;
+			
+			case "NOTIN":
+				returnedResult = notInFunction();
+				break;
+			
+				
 			default :
 				error("Error in builtInFunctions, '%s' is not a built-in function", scan.currentToken.tokenStr);
 				
@@ -745,6 +798,161 @@ public class Parser {
 		
 		return returnedResult;
 		
+	}
+	
+	
+	public ResultValue notInFunction() throws Exception
+	{
+		ResultValue result = new ResultValue();
+		
+		Token previousToken = scan.previousToken;
+		ResultValue matchValue = null; 
+		
+		if(previousToken.subClassif == Token.IDENTIFIER)
+			matchValue = getIdentifier(previousToken.tokenStr);
+		
+		else 
+		{
+			matchValue.type = previousToken.subClassif;
+			matchValue.value = previousToken.tokenStr;
+		}
+		
+		//current token is "NOTIN" 
+		scan.getNext();
+		
+		
+		if(scan.currentToken.subClassif == Token.IDENTIFIER)
+		{
+			//make sure it is an array
+			if(!StorageManager.isArray(scan.currentToken.tokenStr))
+				error("In inFunction(), '%s' is not a list", scan.currentToken.tokenStr);
+			
+			StorageEntry arrayEntry = StorageManager.getStorageEntry(scan.currentToken.tokenStr);
+			
+			for(int i = 0; i < arrayEntry.valueList.size(); i++)
+			{
+				if(arrayEntry.valueList.get(i).value.equals(matchValue.value))
+				{
+					result.value = "F";
+					return result;
+				}
+			}
+			
+			result.value = "T";
+		}
+		
+		else
+		{
+			checkCurrentToken("{");
+			scan.getNext();
+		
+			while(!scan.currentToken.tokenStr.equals("}"))
+			{
+				if(scan.currentToken.tokenStr.equals(matchValue.value))
+				{
+					result.value = "F";
+					while(!scan.currentToken.tokenStr.equals("}"))
+						scan.getNext();
+					return result;
+				}
+				else
+					scan.getNext();
+			
+				if(!scan.currentToken.tokenStr.equals("}"))
+				{
+					checkCurrentToken(",");
+					scan.getNext();
+				}
+				//scan.getNext();
+			
+			}
+			//value is not in the valuelist 
+			result.value = "T";
+			//return result;
+		}
+		
+		return result;
+		
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public ResultValue inFunction() throws Exception {
+		
+		ResultValue result = new ResultValue();
+		Token previousToken = scan.previousToken;
+		ResultValue matchValue = null; 
+		
+		if(previousToken.subClassif == Token.IDENTIFIER)
+			matchValue = getIdentifier(previousToken.tokenStr);
+		
+		else 
+		{
+			
+			matchValue.type = previousToken.subClassif;
+			matchValue.value = previousToken.tokenStr;
+		}
+		
+		//current token is "IN" 
+		scan.getNext();
+		
+		
+		if(scan.currentToken.subClassif == Token.IDENTIFIER)
+		{
+			//make sure it is an array
+			if(!StorageManager.isArray(scan.currentToken.tokenStr))
+				error("In inFunction(), '%s' is not a list", scan.currentToken.tokenStr);
+			
+			StorageEntry arrayEntry = StorageManager.getStorageEntry(scan.currentToken.tokenStr);
+			
+			for(int i = 0; i < arrayEntry.valueList.size(); i++)
+			{
+				if(arrayEntry.valueList.get(i).value.equals(matchValue.value))
+				{
+					result.value = "T";
+					return result;
+				}
+			}
+			
+			result.value = "F";
+		}
+		
+		else
+		{
+			checkCurrentToken("{");
+			scan.getNext();
+		
+			while(!scan.currentToken.tokenStr.equals("}"))
+			{
+				if(scan.currentToken.tokenStr.equals(matchValue.value))
+				{
+					result.value = "T";
+					while(!scan.currentToken.tokenStr.equals("}"))
+						scan.getNext();
+					return result;
+				}
+				else
+					scan.getNext();
+			
+				if(!scan.currentToken.tokenStr.equals("}"))
+				{
+					checkCurrentToken(",");
+					scan.getNext();
+				}
+				//scan.getNext();
+			
+			}
+			//value is not in the valuelist 
+			result.value = "F";
+			//return result;
+		}
+		
+		return result;
 	}
 	
 	
@@ -1039,6 +1247,8 @@ public class Parser {
 		// get the assignment operator
 		scan.getNext();
 		
+		
+		
 		StorageEntry varEntry = StorageManager.getStorageEntry(variableStr);
 		
 		
@@ -1111,7 +1321,94 @@ public class Parser {
 			// is the current token an index in the string?
 			if(scan.currentToken.tokenStr.equals("["))
 			{
+				
+				
 				scan.getNext();
+				
+				//check for assigning slices 
+				if(scan.currentToken.tokenStr.equals("~") || scan.nextToken.tokenStr.equals("~"))
+				{
+					//String newString = "";
+					int beginSlice = 0;
+					
+					if(scan.currentToken.tokenStr.equals("~"))
+					{
+						beginSlice = 0;
+						scan.getNext();
+					}
+					
+					else if(scan.nextToken.tokenStr.equals("~"))
+					{
+						if(Numeric.isInt(scan.currentToken.tokenStr) == false)
+							error("In assignmentStmt(), '%s' is not a valid value for accessing an index", scan.currentToken.tokenStr);
+						beginSlice = Integer.valueOf(scan.currentToken.tokenStr);
+						scan.getNext();  //"~"
+						scan.getNext();
+					}
+					
+					
+					
+					
+					
+					
+					ResultValue newString = new ResultValue(); 
+					
+					
+					
+					
+					//scan.getNext();
+					if(Numeric.isInt(scan.currentToken.tokenStr) == false)
+						error("In assignmentStmt(), '%s' is not a valid value for accessing an index", scan.currentToken.tokenStr);
+					int endSlice = Integer.valueOf(scan.currentToken.tokenStr);
+					scan.getNext();
+					checkCurrentToken("]");
+					scan.getNext();
+					checkCurrentToken("=");
+					scan.getNext();
+					String sliceString = scan.currentToken.tokenStr;
+					
+					
+					//TODO error check 
+					// get the substring beginning at the ending slice, and replace the others 
+					String firstSubString = varEntry.variableValue.substring(beginSlice, endSlice);
+					String notReplaced = varEntry.variableValue.substring(endSlice, varEntry.variableValue.length());
+					
+					if(beginSlice == 0)
+					{
+						if(sliceString.equals(""))
+						{
+							newString.value = notReplaced;
+							newString.type = Token.STRING;
+							varEntry.variableValue = newString.value;
+							return newString;
+						}
+						
+						
+						if(sliceString.length() >= firstSubString.length())
+						{
+							newString.value = sliceString + notReplaced;
+							newString.type = Token.STRING;
+							varEntry.variableValue = newString.value;
+							return newString;
+					
+							
+						}
+					}
+					
+					else if(beginSlice > 0)
+					{
+						String firstPart = varEntry.variableValue.substring(0, beginSlice);
+						
+						newString.value = firstPart + sliceString + notReplaced;
+						newString.type = Token.STRING;
+						varEntry.variableValue = newString.value;
+						return newString;
+						
+						
+					}
+					
+					
+				}
 				
 				ResultValue strIndex = expression();
 				strIndex = HavabolUtilities.calculateExp(this, strIndex.value, Token.INTEGER);
@@ -1165,10 +1462,17 @@ public class Parser {
 		
 		operatorStr = scan.currentToken.tokenStr;
 
-		// only dealing with = for now
+		Numeric nOp2; //numeric value of second operand
+		Numeric nOp1; //numeric value of first operand 
+		
 		switch (operatorStr) {
 		case "=":
 			resO2 = expression();
+			
+			// if you are assigning to a date then you need to make sure the date is a valid format 
+			if(varEntry.dataType == Token.DATE)
+				checkDate(resO2.value);
+			
 			if(StorageManager.getStorageEntry(variableStr).valueList != null)
 			{
 				// need to assign the array value
@@ -1176,6 +1480,25 @@ public class Parser {
 				break;
 			}
 			assign(variableStr, resO2);
+			break;
+			
+		case "+=" :
+			resO2 = expression();
+			//expression must be numeric 
+			nOp2 = new Numeric(this, resO2, "+=", "2nd operand");
+			resO1 = getIdentifier(variableStr);
+			nOp1 = new Numeric(this, resO1, "+=", "1st operand");
+			
+			assign(variableStr, HavabolUtilities.add(this, nOp1, nOp2));
+			break;
+			
+		case "-=" :
+			resO2 = expression();
+			nOp2 = new Numeric(this, resO2, "-=", "2nd operand");
+			resO1 = getIdentifier(variableStr);
+			nOp1 = new Numeric(this, resO1, "-=", "1st operand");
+			
+			assign(variableStr, HavabolUtilities.subtract(this, nOp1, nOp2));
 			break;
 
 		default:
@@ -1187,9 +1510,394 @@ public class Parser {
 	
 	
 	
+	/**
+	 * Checks for a valid date 
+	 * @param dateString
+	 * @throws Exception 
+	 */
+	public void checkDate(String dateString) throws Exception
+	{
+		
+		 final int iDaysPerMonth[] = 
+		       { 0, 31, 29, 31
+		          , 30, 31, 30
+		          , 31, 31, 30
+		          , 31, 30, 31 };
+		
+		if(dateString.length() != 10)
+			error("In function checkDate, date must be 10 characters in length");
+		
+		String[] dateValues = dateString.split("-");
+		
+		if(dateValues.length != 3)
+			error("In checkDate, Incorrect number of entries for the date");
+		
+		String year = dateValues[0];
+		String month = dateValues[1];
+		String day = dateValues[2];
+		
+		//make sure year, month, and day are the correct number or characters 
+		if(year.length() != 4)
+			error("In function checkDate, year must be 4 characters in length");
+		
+		if(month.length() != 2)
+			error("In function checkDate, month must be 2 characters in length");
+		
+		if(day.length() != 2)
+			error("In function checkDate, day must be 2 characters in length");
+		
+		
+		int iYear = Integer.valueOf(year);
+		int iMonth = Integer.valueOf(month);
+		int iDay = Integer.valueOf(day);
+		
+		
+		if(iMonth == 0 || iDay == 0)
+			error("In function checkDate, 0 is not a valid entry");
+		
+		if(iMonth > 12)
+			error("In function checkDate, invalid month entry");
+		
+		//make sure the day is not out of range corresponding to the month 
+		if(iDay > iDaysPerMonth[iMonth])
+			error("In function checkDate, date is out of range for the month");
+		
+		
+		//check for leap year 
+		if(iMonth == 2 && iDay == 29)
+		{
+			if(iYear % 4 == 0 && (iYear % 100 != 0 || iYear %400 == 0))
+				return;
+			else
+				error("In function checkDate, %s is not a leap year", iYear);
+		}
+
+		
+	}
+	
+	
+	/**
+	 * 
+	 * @param date1
+	 * @param date2
+	 * @return
+	 * @throws Exception 
+	 */
+	public ResultValue dateDiff() throws Exception
+	{
+		ResultValue result = new ResultValue();
+		int difference = 0;
+		int year1Total = 0;
+		int year2Total = 0;
+		final int iDaysPerMonth[] = 
+		       { 0, 31, 29, 31
+		          , 30, 31, 30
+		          , 31, 31, 30
+		          , 31, 30, 31 };
+		
+		scan.getNext();
+		checkCurrentToken("(");
+		
+		scan.getNext();
+		//the first parameter in the function is the first date, make sure it is valid  
+		ResultValue date1 = returnValue();
+		checkDate(date1.value);
+		
+		scan.getNext();
+		checkCurrentToken(",");
+		scan.getNext();
+		
+		//second parameter is the second date, make sure it is valid 
+		ResultValue date2 = returnValue();
+		checkDate(date2.value);
+		
+		scan.getNext();
+		checkCurrentToken(")");
+		
+		String[] date1Values = date1.value.split("-");
+		String [] date2Values = date2.value.split("-");
+		
+		// Get integer values of the first date  
+		int iYear1 = Integer.valueOf(date1Values[0]);
+		int iMonth1 = Integer.valueOf(date1Values[1]);
+		int iDay1 = Integer.valueOf(date1Values[2]);
+
+	
+		year1Total = numberOfDays(iYear1, iMonth1, iDay1);
+		
+		
+		int iYear2 = Integer.valueOf(date2Values[0]);
+		int iMonth2 = Integer.valueOf(date2Values[1]);
+		int iDay2 = Integer.valueOf(date2Values[2]);
+		
+		
+	
+	
+		year2Total = numberOfDays(iYear2, iMonth2, iDay2);
+		
+		
+	
+		
+		difference = year1Total - year2Total;
+		
+		result.type = Token.INTEGER;
+		result.value = String.valueOf(difference);
+		
+		return result;
+	}
+	
+	public ResultValue dateAge() throws Exception
+	{
+		ResultValue result = new ResultValue();
+		int difference = 0;
+		int year1Total = 0;
+		int year2Total = 0;
+		final int iDaysPerMonth[] = 
+		       { 0, 31, 29, 31
+		          , 30, 31, 30
+		          , 31, 31, 30
+		          , 31, 30, 31 };
+		
+		scan.getNext();
+		checkCurrentToken("(");
+		
+		scan.getNext();
+		//the first parameter in the function is the first date, make sure it is valid  
+		ResultValue date1 = returnValue();
+		checkDate(date1.value);
+		
+		scan.getNext();
+		checkCurrentToken(",");
+		scan.getNext();
+		
+		//second parameter is the second date, make sure it is valid 
+		ResultValue date2 = returnValue();
+		checkDate(date2.value);
+		
+		scan.getNext();
+		checkCurrentToken(")");
+		
+		String[] date1Values = date1.value.split("-");
+		String [] date2Values = date2.value.split("-");
+		
+		// Get integer values of the first date  
+		int iYear1 = Integer.valueOf(date1Values[0]);
+		int iMonth1 = Integer.valueOf(date1Values[1]);
+		int iDay1 = Integer.valueOf(date1Values[2]);
+
+	
+		year1Total = numberOfDays(iYear1, iMonth1, iDay1);
+		
+		
+		int iYear2 = Integer.valueOf(date2Values[0]);
+		int iMonth2 = Integer.valueOf(date2Values[1]);
+		int iDay2 = Integer.valueOf(date2Values[2]);
+		
+		
+	
+	
+		year2Total = numberOfDays(iYear2, iMonth2, iDay2);
+		
+		
+	
+		
+		difference = year1Total - year2Total;
+		
+		
+		
+		int numYears = difference / 365;
+		
+		result.type = Token.INTEGER;
+		result.value = String.valueOf(numYears);
+		
+		return result;
+		
+		
+	}
+	
+
+	/**
+	 * 
+	 * @param year
+	 * @return
+	 */
+	public int numberOfDays(int year, int month, int days)
+	{
+		int iCountDays = 0;
+		
+		//calculate number of days since 0000-03-01
+		
+		//if month is March or greater, decrease it by 3 
+		if(month > 2)
+			month -= 3;
+		else
+		{
+			month += 9;  //adjust the month since we begin with March
+			year--; //subtract 1 from the year if month was Jan or Feb 
+		}
+		
+		iCountDays = 365 * year + (year/4 - year/100 + year/400) + (month * 306 +5)/10 + days;
+	
+		return iCountDays;
+	}
 	
 	
 	
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public ResultValue dateAdj() throws Exception
+	{
+		ResultValue result = new ResultValue();
+		int iDaysPerMonth[] = 
+		       { 0, 31, 29, 31
+		          , 30, 31, 30
+		          , 31, 31, 30
+		          , 31, 30, 31 };
+		
+		
+		
+		scan.getNext();
+		checkCurrentToken("(");
+		
+		scan.getNext();
+		ResultValue date = returnValue();
+		checkDate(date.value);
+		
+		
+		scan.getNext();
+		checkCurrentToken(",");
+		
+		scan.getNext();
+		ResultValue days = returnValue();
+		
+		scan.getNext();
+		checkCurrentToken(")");
+		
+		if(scan.nextToken.equals(")"))
+				scan.getNext();
+		
+		
+		String [] dateValues = date.value.split("-");
+		
+		// Get integer values of the date  
+		int iYear = Integer.valueOf(dateValues[0]);
+		int iMonth = Integer.valueOf(dateValues[1]);
+		int iDay = Integer.valueOf(dateValues[2]);
+		
+		int daysToAdjust = Integer.valueOf(days.value);
+		
+		
+		
+		if(iYear % 4 == 0 && (iYear % 100 != 0 || iYear %400 == 0))
+			iDaysPerMonth[2] = 29;
+		else
+			iDaysPerMonth[2] = 28;
+		
+		
+		
+		if(daysToAdjust < 0)
+		{
+			
+			for(int i = 0; i > daysToAdjust; i--)
+			{
+				if(iDay == 1)
+				{
+					
+					if(iMonth == 1)
+					{
+						iYear --;
+						
+						if(iYear % 4 == 0 && (iYear % 100 != 0 || iYear %400 == 0))
+							iDaysPerMonth[2] = 29;
+						else
+							iDaysPerMonth[2] = 28;
+						
+						iMonth = 12;
+						iDay = 31;
+						
+					}
+					else
+					{
+						iMonth--;
+						iDay = iDaysPerMonth[iMonth];
+					}
+					
+				}
+				
+				else
+					iDay--;
+				
+			}
+		}
+		
+		
+		else
+		{
+			for(int i = 0; i < daysToAdjust; i++)
+			{
+				//System.out.println("iDay = " + iDay);
+			
+				if(iDay == iDaysPerMonth[iMonth])
+				{
+					if(iMonth == 12)
+					{
+					
+						iYear++;
+					
+						if(iYear % 4 == 0 && (iYear % 100 != 0 || iYear %400 == 0))
+							iDaysPerMonth[2] = 29;
+						else
+							iDaysPerMonth[2] = 28;
+					
+						iMonth = 1;
+						iDay = 1;
+					}
+				
+					else
+					{
+						iMonth++;
+						iDay = 1;
+					}
+				}
+				else
+					iDay++;
+			
+			
+			
+		
+			}
+		}
+		
+		
+		
+		String yearString = String.format("%04d", iYear);
+		String monthString = String.format("%02d", iMonth);
+		String dayString = String.format("%02d", iDay);
+		
+		
+		String newDate = yearString + "-" + monthString + "-" + dayString;
+		
+		
+		
+		
+		System.out.println("new Date = " + newDate);
+
+		
+		
+		
+		
+		
+		
+		
+		result.value = newDate;
+		result.type = Token.INTEGER;
+	
+		
+		return result;
+	}
 	
 	
 	
@@ -1205,6 +1913,12 @@ public class Parser {
 	public ResultValue returnValue() throws Exception {
 		ResultValue result = new ResultValue();
 
+		if(scan.currentToken.tokenStr.equals("-"))
+		{
+			result.value = "-";
+			scan.getNext();
+		}
+		
 		if (scan.currentToken.primClassif != Token.OPERAND)
 			System.out.println("Error in returnValue(), " + scan.currentToken.tokenStr + " is not an operand");
 
@@ -1214,7 +1928,7 @@ public class Parser {
 		}
 		
 		else {
-			result.value = scan.currentToken.tokenStr;
+			result.value += scan.currentToken.tokenStr;
 			result.type = scan.currentToken.subClassif;
 		}
 
@@ -1251,6 +1965,20 @@ public class Parser {
 				//TODO get array value 
 				scan.getNext();
 				scan.getNext();
+				
+				if(scan.currentToken.tokenStr.equals("~"))
+				{
+					result = getSlice(variableName);
+					return result;
+				}
+				
+				if(scan.nextToken.tokenStr.equals("~"))
+				{
+					//scan.getNext();
+					result = getSlice(variableName);
+					return result;
+				}
+				
 				//System.out.println("Calling getArrayIndex with token " + scan.currentToken.tokenStr);
 				int index = getArrayIndex();
 				result = storageEntry.valueList.get(index);
@@ -1283,9 +2011,27 @@ public class Parser {
 		ResultValue evaluatedExpression = new ResultValue();
 		// System.out.println("In expression, Next Token " + scan.currentToken.tokenStr);
 
+		if(scan.nextToken.tokenStr.equals("IN"))
+		{
+			scan.getNext();
+			evaluatedExpression = inFunction();
+			return evaluatedExpression;
+		}
+		
+		if(scan.nextToken.tokenStr.equals("NOTIN"))
+		{
+			scan.getNext();
+			evaluatedExpression = notInFunction();
+			return evaluatedExpression;
+		}
+		
+		
+		
+		
 		switch (scan.currentToken.primClassif) {
 
 		case Token.OPERATOR:
+			
 			
 			// get the right side of the expression
 			scan.getNext();
@@ -1307,6 +2053,7 @@ public class Parser {
 
 		case Token.OPERAND:
 
+			
 			// is it an identifier?
 			switch (scan.currentToken.subClassif) {
 		
@@ -1431,9 +2178,10 @@ public class Parser {
 			
 			
 			
-			
+				String variableString = scan.currentToken.tokenStr;
 				result.type = scan.currentToken.subClassif;
 				result = returnValue();
+				
 				
 				if(result.type == Token.STRING)
 				{
@@ -1441,15 +2189,26 @@ public class Parser {
 					{
 						scan.getNext();
 						scan.getNext();
-						int index = getArrayIndex();
+						if(scan.currentToken.tokenStr.equals("~") || scan.nextToken.tokenStr.equals("~"))
+						{
+								ResultValue sliceResult = getSlice(variableString);
+								return sliceResult;
+						}
+						else
+						{
+							int index = getArrayIndex();
 						
-						char[] resChar = result.value.toCharArray();
-						result.value = String.valueOf(resChar[index]);
+							char[] resChar = result.value.toCharArray();
+							result.value = String.valueOf(resChar[index]);
+						}
 						return result;
 						
 						
 					}
 				}
+				
+				else if(result.type == Token.DATE)
+					return result;
 				
 				
 			
@@ -1614,6 +2373,108 @@ public class Parser {
 	
 	
 	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public ResultValue getSlice(String variable) throws Exception
+	{
+		ResultValue result = new ResultValue();
+		int beginningIndex = 0;
+		int endingIndex = 0;
+		StorageEntry varEntry = StorageManager.getStorageEntry(variable);
+	
+		
+		if(scan.currentToken.tokenStr.equals("~"))
+		{
+			//start at the beginning of the string
+			beginningIndex = 0;
+		}
+		
+		else
+		{
+			if(!Numeric.isInt(scan.currentToken.tokenStr))
+				error("In getSlice, '%s' is an invalid numeric value");
+			
+			beginningIndex = Integer.valueOf(scan.currentToken.tokenStr);
+			scan.getNext();
+			checkCurrentToken("~");
+		}
+			
+		scan.getNext();
+		
+		if(scan.currentToken.tokenStr.equals("]"))
+		{
+			if(StorageManager.isArray(variable))
+				endingIndex = varEntry.valueList.size();
+			
+			//ending index will be the end of the string 
+			else
+				endingIndex = varEntry.variableValue.length(); 
+		}
+		
+		else
+		{
+			if(!Numeric.isInt(scan.currentToken.tokenStr))
+				error("In getSlice, '%s' is an invalid numeric value");
+		
+		
+			endingIndex = Integer.valueOf(scan.currentToken.tokenStr);
+		}
+		
+		
+		
+		//if the variable is not an array, 
+		if(StorageManager.isArray(variable) == false)
+		{
+			if(varEntry.dataType != Token.STRING)
+				error("In getSlice, '%s' is not a string", variable);
+			
+			if(beginningIndex < 0 || beginningIndex > varEntry.variableValue.length())
+				error("In getSlice() '%s' is out of bounds for the beginning index", beginningIndex);
+			
+			if(endingIndex < beginningIndex || endingIndex > varEntry.variableValue.length())
+				error("In getSlice() '%s' is not a valid value for the ending index", endingIndex);
+			
+			for(int i = beginningIndex; i < endingIndex; i++)
+				result.value += varEntry.variableValue.charAt(i);
+			
+		}
+		
+		else
+		{
+			if(beginningIndex < 0 || beginningIndex > varEntry.valueList.size() - 1)
+				error("In getSlice(), '%s' is out of bounds for the beginning index", beginningIndex);
+			
+			if(endingIndex < beginningIndex || endingIndex > varEntry.valueList.size())
+				error("In getSlice(), '%s' is not a valid value for the ending index", endingIndex);
+			
+			System.out.println("beginning index is " + beginningIndex);
+			System.out.println("Ending index is " + endingIndex);
+			
+			for(int i = beginningIndex; i < endingIndex; i++)
+			{
+				result.value += varEntry.valueList.get(i) + " ";
+			}
+		}
+		
+		
+		
+		if(scan.currentToken.tokenStr.equals("]"))
+			return result;
+		
+		scan.getNext();
+		checkCurrentToken("]");
+		
+		//System.out.println("Returning " + result.value);
+		
+		
+		return result;
+		
+	}
+	
+	
+	/**
 	 * parses the expression inside of [ ] 
 	 * @return
 	 * @throws Exception
@@ -1629,6 +2490,8 @@ public class Parser {
 		boolean nextOperator = false;
 		
 		//Current token is the first token inside the "["
+		
+	
 		
 		while(scan.currentToken.tokenStr.equals("("))
 		{

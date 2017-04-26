@@ -14,7 +14,8 @@ public class Scanner {
 	public static int iColPos;						//Column position within the current text line 
 	public  Token currentToken;				//Token established with the most recent call to getNext()
 	public  Token nextToken;					//The token following the currentToken 
-	private static final String delimiters = "\t;:,()\'\"=!<>+-*/[]#^\n";	//string to check for delimiters
+	public Token previousToken;
+	private static final String delimiters = "{}\t;:,()\'\"=!<>+~-*/[]#^\n";	//string to check for delimiters
 	private static final String operators = "+-*/+=<>!^";	//string to check for operators 
 	private static final String separators = "(),:;[]";		//string to check for separators 
 	private static final String charOperators = "<>=!^";
@@ -80,6 +81,8 @@ public class Scanner {
 		int iStartingIndex;
 		int blankLineNr;
 	
+		previousToken = currentToken;
+		
 		//Assign the current Token 
 		currentToken = nextToken;
 		
@@ -252,6 +255,24 @@ public class Scanner {
 				}
 				break;
 			
+			case '+' :
+				//TODO add additional assignment 
+				if(textCharM[iColPos + 1] == '=')
+				{
+					iColPos += 2;
+					assignNextTokenString(iStartingIndex);
+				}
+				break;
+				
+			case '-' :
+				//TODO add additional assignment 
+				if(textCharM[iColPos + 1] == '=')
+				{
+					iColPos += 2;
+					assignNextTokenString(iStartingIndex);
+				}
+				break;
+			
 			default:
 				iColPos++;
 				assignNextTokenString(iStartingIndex);
@@ -315,6 +336,9 @@ public class Scanner {
 						token.subClassif = 12;
 						break;
 					case "Bool" :
+						token.subClassif = 12;
+						break;
+					case "Date" :
 						token.subClassif = 12;
 						break;
 					default :

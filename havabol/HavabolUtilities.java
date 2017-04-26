@@ -211,6 +211,72 @@ public class HavabolUtilities {
 
 	
 	
+    
+    /**
+     * 
+     * @param parser
+     * @param nOp1
+     * @param nOp2
+     * @return
+     * @throws Exception
+     */
+    public static ResultValue add(Parser parser, Numeric nOp1, Numeric nOp2) throws Exception
+    {
+    	ResultValue result = new ResultValue();
+    	result.type = nOp1.type;
+    	
+    	if(result.type == Token.INTEGER)
+    	{
+    		int iVal = nOp1.integerValue + nOp2.integerValue;
+    		result.value = String.valueOf(iVal);
+    	}
+    	
+    	else if(result.type == Token.FLOAT)
+    	{
+    		double dVal = nOp1.doubleValue + nOp2.doubleValue;
+    		result.value = String.valueOf(dVal);
+    	}
+    	
+    	else
+    		parser.error("Error, invalid numeric type");
+    		
+    	
+    	return result;
+    	
+    }
+    
+    /**
+     * 
+     * @param parser
+     * @param nOp1
+     * @param nOp2
+     * @return
+     * @throws Exception
+     */
+    public static ResultValue subtract(Parser parser, Numeric nOp1, Numeric nOp2) throws Exception
+    {
+    	ResultValue result = new ResultValue();
+    	result.type = nOp1.type;
+    	
+    	if(result.type == Token.INTEGER)
+    	{
+    		int iVal = nOp1.integerValue - nOp2.integerValue;
+    		result.value = String.valueOf(iVal);
+    	}
+    	
+    	else if(result.type == Token.FLOAT)
+    	{
+    		double dVal = nOp1.doubleValue - nOp2.doubleValue;
+    		result.value = String.valueOf(dVal);
+    	}
+    	
+    	else
+    		parser.error("Error, invalid numeric type");
+    		
+    	
+    	return result;
+    	
+    }
 	
 	
 	/**

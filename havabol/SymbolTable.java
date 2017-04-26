@@ -65,6 +65,9 @@ public class SymbolTable {
         symbolTable.put( "SPACES", new STFunction("SPACES", Token.FUNCTION, Token.INTEGER, Token.BUILTIN, VAR_ARGS) );  
         symbolTable.put( "ELEM", new STFunction("ELEM", Token.FUNCTION, Token.INTEGER, Token.BUILTIN, VAR_ARGS) );  
         symbolTable.put( "MAXELEM", new STFunction("MAXELEM", Token.FUNCTION, Token.INTEGER, Token.BUILTIN, VAR_ARGS) ); 
+        symbolTable.put( "dateDiff", new STFunction("dateDiff", Token.FUNCTION, Token.INTEGER, Token.BUILTIN, VAR_ARGS) ); 
+        symbolTable.put( "dateAdj", new STFunction("dateAdj", Token.FUNCTION, Token.INTEGER, Token.BUILTIN, VAR_ARGS) ); 
+        symbolTable.put( "dateAge", new STFunction("dateAge", Token.FUNCTION, Token.INTEGER, Token.BUILTIN, VAR_ARGS) ); 
         symbolTable.put( "and", new STEntry("and", Token.OPERATOR) );
         symbolTable.put( "or", new STEntry("or", Token.OPERATOR) );
         symbolTable.put( "not", new STEntry("not", Token.OPERATOR) );
