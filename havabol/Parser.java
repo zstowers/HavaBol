@@ -1357,10 +1357,15 @@ public class Parser {
 	 * @throws Exception
 	 */
 	public ResultValue assignmentStmt() throws Exception {
+		STEntry targetEntry = null;
+		STEntry sourceEntry = null;
+		STIdentifier targetIdent = null;
+		STIdentifier sourceIdent = null;
 		ResultValue res = null;
 		ResultValue resO1 = null;
 		ResultValue resO2;
 		ResultValue arrIndex = null;
+		ResultValue arrValue = new ResultValue();
 		String variableStr;
 		String operatorStr;
 		int index = 0;
@@ -1377,14 +1382,74 @@ public class Parser {
 		// get the assignment operator
 		scan.getNext();
 		
-		
-		
 		StorageEntry varEntry = StorageManager.getStorageEntry(variableStr);
+		targetEntry = SymbolTable.getSymbol(variableStr);
 		
+		if(targetEntry instanceof STIdentifier)
+			targetIdent = (STIdentifier) targetEntry;
 		
-		
-		
-		
+		//unbound array assignment statement 
+		if(targetIdent.structure.equals("unbound array") && scan.currentToken.tokenStr.equals("=")) {
+			scan.getNext();
+			//unbound array to another unbound array or fixed array 
+			if(scan.currentToken.subClassif == Token.IDENTIFIER)
+			{
+				StorageEntry assignedVal = StorageManager.getStorageEntry(scan.currentToken.tokenStr);
+				sourceEntry = SymbolTable.getSymbol(scan.currentToken.tokenStr);
+			
+				if(sourceEntry instanceof STIdentifier)
+					sourceIdent = (STIdentifier) sourceEntry;
+				
+				//Nothing to copy if the source valueList size is 0 
+				if(assignedVal.valueList.size() == 0)
+					return null;
+				else {
+					for(int i = 0; i < assignedVal.valueList.size(); i++) {
+						if(i >= varEntry.valueList.size())
+							varEntry.valueList.add(i, assignedVal.valueList.get(i));
+						else
+							varEntry.valueList.set(i, assignedVal.valueList.get(i));
+					}
+					//Check elements after array to array assignment
+					scan.getNext();
+					
+					//make sure the current token is a ;
+					checkCurrentToken(";");
+					return arrValue;
+				}
+			}
+			//unbound array to scalar 
+			else{
+				arrValue.value = scan.currentToken.tokenStr;
+				arrValue.type= varEntry.dataType;
+				arrValue.structure = "unbounded array";
+				//Unbound array size is zero with a scalar assignment, so we add the 
+				//scalar and return 
+				if(varEntry.valueList.size() == 0){
+					varEntry.valueList.add(arrValue);
+					scan.getNext();
+					
+					//make sure the current token is a ; 
+					checkCurrentToken(";");
+					
+					return arrValue;
+				}
+				else{
+					for(int i = 0; i < varEntry.valueList.size(); i++) {
+						if(i >= varEntry.valueList.size())
+							break;
+						
+						varEntry.valueList.set(i, arrValue);
+					}
+					scan.getNext();
+					
+					//make sure the current token is a ; 
+					checkCurrentToken(";");
+					
+					return arrValue;
+				}
+			}
+		}
 		
 		//check for array 
 		if(varEntry.valueList != null)
@@ -1397,7 +1462,7 @@ public class Parser {
 				//fill every index with the value 
 				scan.getNext();
 				
-				ResultValue arrValue = new ResultValue();
+				ResultValue arrayValue = new ResultValue();
 				
 				if(scan.currentToken.subClassif == Token.IDENTIFIER)
 				{
@@ -1414,7 +1479,7 @@ public class Parser {
 						}
 						
 						scan.getNext();
-						return arrValue;
+						return arrayValue;
 						
 					}
 					
@@ -1425,14 +1490,14 @@ public class Parser {
 				
 				else
 				{
-					arrValue.value = scan.currentToken.tokenStr;
-					arrValue.type = varEntry.dataType;
+					arrayValue.value = scan.currentToken.tokenStr;
+					arrayValue.type = varEntry.dataType;
 				
 					for(int i = 0; i < varEntry.valueList.size(); i++)
-						varEntry.valueList.set(i, arrValue);
+						varEntry.valueList.set(i, arrayValue);
 				
 					scan.getNext();
-					return arrValue;
+					return arrayValue;
 				}
 			
 			}
@@ -2785,9 +2850,10 @@ public class Parser {
 	public void assignArray(String arrayVariable, int index, ResultValue value)
 	{
 		
-		
+		STIdentifier iDent = null;
 		StorageEntry entry = StorageManager.getStorageEntry(arrayVariable);
-		
+		STEntry stEntry = symbolTable.getSymbol(arrayVariable);
+		int dataType = StorageManager.getDataType(arrayVariable);
 		
 		
 		if(entry.valueList.size() < index)
@@ -2802,12 +2868,30 @@ public class Parser {
 			entry.valueList.add(value);
 				
 		}
+		if(stEntry instanceof STIdentifier)
+			iDent = (STIdentifier) stEntry;
 		
+		//If unbound array is 0 and you want to add an element, 
+		//if the index is greater than zero, add the value param to all elements
+		//including the index and exit, else just add the value 
+		if( (iDent.structure.equals("unbound array")) && (entry.valueList.size() == 0) ){
+			if(index > 0) {
+				for(int i = 0; i < index; i++){
+					entry.valueList.add(i, value);
+				}
+				entry.valueList.add(index, value);
+				return;
+			}
+			else{
+				entry.valueList.add(index, value);
+				return;
+			}
+		}
 		
 	
 		ResultValue result = entry.valueList.get(index);
 		
-		int dataType = StorageManager.getDataType(arrayVariable);
+		//int dataType = StorageManager.getDataType(arrayVariable);
 		
 		
 		
@@ -2932,7 +3016,7 @@ public class Parser {
 	
 	/**
 	 * declareVariableArray.
-	 *  Declares and initializes the array with its corresponding valueList in the 
+	 *  Declares and initializes fixed or unbound arrays with its corresponding valueList in the 
 	 *  symbolTable and in the storageManager.
 	 *  <p>
 	 *  
@@ -2967,8 +3051,73 @@ public class Parser {
          {     
              scan.getNext();
              
-             if (scan.currentToken.tokenStr.equals("unbound"))
-                 System.out.println("Unbound array");    //TODO
+             if (scan.currentToken.tokenStr.equals("unbound")){
+                 //System.out.println("Unbound array");    //TODO
+            	 scan.getNext();
+             
+            	 checkCurrentToken("]");
+            	 
+            	 if(scan.nextToken.tokenStr.equals(";")) {
+            		 //declare the variable in the symbol table 
+            		 newEntry = new STIdentifier(arrayName, Token.OPERAND, "unbound array", "not a parm", dataType, 99);
+            		 symbolTable.putSymbol(arrayName, newEntry);
+            		 
+            		 //declare the array in the storage manager 
+            		 storageEntry = new StorageEntry(arrayName, dataType, null, valueList);
+            		 storageManager.addVariable(arrayName, storageEntry);
+            		 
+            		 scan.getNext();
+            		 return;
+            	 }
+            	 
+            	 //unbound array with a valuelist 
+            	 else if(scan.nextToken.tokenStr.equals("=")){
+            		 
+            		 //declare the array in the symbol table 
+            		 newEntry = new STIdentifier(arrayName, Token.OPERAND, "unbound array", "not a parm", dataType, 99);
+            		 symbolTable.putSymbol(arrayName, newEntry);
+            		 
+            		//declare the array in the storage manager
+                     storageEntry = new StorageEntry(arrayName, dataType, null, valueList);
+                     storageManager.addVariable(arrayName, storageEntry);
+
+                     //get the next token, it should be "="
+                     scan.getNext();
+
+                     // now get the operand 
+                     scan.getNext();
+            	 
+                     while ( !scan.currentToken.tokenStr.equals(";") ){
+                         
+                         if(scan.currentToken.tokenStr.equals(","))
+                             scan.getNext();
+
+                         //Store the value in the valueList 
+                         listEntry = expression();
+                         if (listEntry.type != dataType){
+                             System.out.println("ERROR in declareVariableArray(), invalid operand "
+                                     + scan.currentToken.tokenStr + " used on line " + (scan.currentToken.iSourceLineNr+1));
+                             System.exit(-1);
+                         }
+                         listEntry.structure = "unbound array";
+                         listEntry.type = dataType;
+                         
+                         assign(arrayName, listEntry);
+                         valueList.add(listEntry);
+
+                         scan.getNext();
+                     }
+                     return;
+                     
+            	 }
+            	 else{
+                     System.out.println("Error in declareVariableArray() on line " + scan.currentToken.iSourceLineNr + ". Invalid declaration token, " 
+                             + scan.currentToken.tokenStr + "cannot be used to declare an array");
+                     System.exit(-1);
+                 }
+            	 
+             
+             }
              else
                  maxElem = expression();
             	
