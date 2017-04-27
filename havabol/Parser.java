@@ -81,7 +81,6 @@ public class Parser {
 				// switch based on the subclass
 				switch (scan.currentToken.subClassif) {
 				case Token.IDENTIFIER:
-					
 					result = assignmentStmt();
 					break;
 
@@ -117,10 +116,20 @@ public class Parser {
 					case "for" :
 						result = forStmt(true);
 						continue;
+						
+					case "select" :
+						result = selectStmt(true);
+						continue;
+					
+					case "when" :
+						result = selectStmt(false);
+						continue;
+						
+					case "default" :
+						return;
 
 					default:
-						System.out.println("Error in statementTest(), " + scan.currentToken.tokenStr
-								+ " is not a valid flow statment");
+						error("Error in statements(), '%s' is not a valid flow statment", scan.currentToken.tokenStr);
 						break;
 					}
 
@@ -547,6 +556,7 @@ public class Parser {
 			
 			if(!scan.currentToken.tokenStr.equals(";"))
 				scan.getNext();
+				//statements();
 			
 			
 			
@@ -712,7 +722,127 @@ public class Parser {
 	
 	
 	
+	/**
+	 * Parser has encountered a SelectStmt assumes you reached a "select" in the
+	 * program
+	 * <p>
+	 * 
+	 * @return ResultValue to let the calling function know it is done
+	 * @throws Exception
+	 */
+
+	public ResultValue selectStmt(boolean exec) throws Exception {
+		
+		int line = scan.currentToken.iSourceLineNr;
+		int col = scan.currentToken.iColPos;
+		ResultValue sVal = new ResultValue();
+		ResultValue result = new ResultValue();
+
+		
+		if (exec) {
+			scan.getNext();
+			
+			// evaluate the condition
+			sVal = expression();
+			
+			// should be on a :
+			if (!scan.currentToken.tokenStr.equals(":"))
+				error("expected ':' , recieved a: %s on line: %d at pos: %d ", scan.currentToken.tokenStr, line, col);
+			
+			scan.getNext();
+			
+			if (!scan.currentToken.tokenStr.equals("when")) 
+				error("expected a 'when' after a select, and recieved a: %s on line: %d at pos: %d ", scan.currentToken.tokenStr,line,col);
+			
+			scan.getNext();
+			
+			
+			while (exec) 
+			{
+				ResultValue switchToken = expression();
+				
+				if(switchToken.value.equals(sVal.value))
+				{
+					//keep getting tokens until you get the : 
+					while(!scan.currentToken.tokenStr.equals(":"))
+						scan.getNext();
+					
+					//token is ":"
+					statements();
+					
+					//flow control END has been hit, either when, default, or endselect
+					if(scan.currentToken.tokenStr.equals("endselect"))
+						break;
+					
+					else if(scan.currentToken.tokenStr.equals("when") || scan.currentToken.tokenStr.equals("default"))
+					{
+						while(!scan.currentToken.tokenStr.equals("endselect"))
+						{
+							//check for a nested select statement that needs to be skipped 
+							if(scan.currentToken.tokenStr.equals("select"))
+							{
+								while(!scan.currentToken.tokenStr.equals("endselect"))
+									scan.getNext();
+							}
+							
+							scan.getNext();
+						}
+						break;
+					}
+				}
+				
+				else
+				{
+					scan.getNext();
+					
+					if(scan.currentToken.tokenStr.equals(","))
+					{
+						// there is another value to check, get it and continue 
+						scan.getNext();
+						continue;
+					}
+					
+					else if(scan.currentToken.tokenStr.equals(":"))
+					{
+						//no more values in the current when statement, skip to the next one or the default if there 
+						//are no more when statements 
+						while(!scan.currentToken.tokenStr.equals("when") && !scan.currentToken.tokenStr.equals("default"))
+						{
+							if(scan.currentToken.tokenStr.equals("select"))
+							{
+								//check for nested select statements that should be skipped 
+								while(!scan.currentToken.tokenStr.equals("endselect"))
+									scan.getNext();
+							}
+							
+							scan.getNext();
+						}
+						
+						if(scan.currentToken.tokenStr.equals("when"))
+						{
+							//beginning of the next when statement to check, continue through the loop 
+							scan.getNext();
+							continue;
+						}
+						
+						else if(scan.currentToken.tokenStr.equals("default"))
+						{
+							//none of the when values matched, execute the default statements 
+							scan.getNext();
+							statements();
+							exec = false;
+							break;
+						}
+					}
+				}
+			}
+			
+		}  // end if(exec) 
+		
+		return result;
+	}
 	
+
 	
 	
 	/**
@@ -1456,10 +1586,6 @@ public class Parser {
 			}
 		}
 		
-		
-		
-		
-		
 		operatorStr = scan.currentToken.tokenStr;
 
 		Numeric nOp2; //numeric value of second operand
@@ -1467,6 +1593,8 @@ public class Parser {
 		
 		switch (operatorStr) {
 		case "=":
+			
+			
 			resO2 = expression();
 			
 			// if you are assigning to a date then you need to make sure the date is a valid format 
@@ -2009,7 +2137,7 @@ public class Parser {
 
 	public ResultValue expression() throws Exception {
 		ResultValue evaluatedExpression = new ResultValue();
-		// System.out.println("In expression, Next Token " + scan.currentToken.tokenStr);
+		 
 
 		if(scan.nextToken.tokenStr.equals("IN"))
 		{
@@ -2035,6 +2163,7 @@ public class Parser {
 			
 			// get the right side of the expression
 			scan.getNext();
+			
 
 			// Check for a negative number
 			if (scan.currentToken.tokenStr.equals("-")) {
@@ -2047,7 +2176,10 @@ public class Parser {
 				System.out.println("Error, " + scan.currentToken.tokenStr + " is not an operand");
 
 			// evaluate the expression
+			
 			evaluatedExpression = operations();
+			
+			
 			
 			return evaluatedExpression;
 
@@ -2176,11 +2308,13 @@ public class Parser {
 		if (scan.currentToken.subClassif == Token.IDENTIFIER) {
 			
 			
-			
+				
+				
 			
 				String variableString = scan.currentToken.tokenStr;
 				result.type = scan.currentToken.subClassif;
 				result = returnValue();
+				
 				
 				
 				if(result.type == Token.STRING)
@@ -2214,8 +2348,9 @@ public class Parser {
 			
 				
 				term += result.value;
-				scan.getNext();
 				
+				scan.getNext();
+			
 
 			
 		}

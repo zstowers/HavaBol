@@ -262,6 +262,11 @@ public class Scanner {
 					iColPos += 2;
 					assignNextTokenString(iStartingIndex);
 				}
+				else
+				{
+					iColPos++;
+					assignNextTokenString(iStartingIndex);
+				}
 				break;
 				
 			case '-' :
@@ -269,6 +274,11 @@ public class Scanner {
 				if(textCharM[iColPos + 1] == '=')
 				{
 					iColPos += 2;
+					assignNextTokenString(iStartingIndex);
+				}
+				else
+				{
+					iColPos++;
 					assignNextTokenString(iStartingIndex);
 				}
 				break;
@@ -321,6 +331,9 @@ public class Scanner {
 						token.subClassif = 10;
 						break;
 					case "while" :
+						token.subClassif = 10;
+						break;
+					case "select" :
 						token.subClassif = 10;
 						break;
 					case "for" :

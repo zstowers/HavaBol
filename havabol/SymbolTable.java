@@ -53,7 +53,11 @@ public class SymbolTable {
         symbolTable.put( "for", new STControl("for", Token.CONTROL, Token.FLOW) );
         symbolTable.put( "endfor", new STControl("endfor", Token.CONTROL, Token.END) );
         symbolTable.put( "while", new STControl("while", Token.CONTROL, Token.FLOW) );
+        symbolTable.put( "select", new STControl("select", Token.CONTROL, Token.FLOW) );
+        symbolTable.put( "endselect", new STControl("endselect", Token.CONTROL, Token.END) );
         symbolTable.put( "endwhile", new STControl("endwhile", Token.CONTROL, Token.END) );
+        symbolTable.put( "when", new STControl("when", Token.CONTROL, Token.FLOW) );
+        symbolTable.put( "default", new STControl("default", Token.CONTROL, Token.FLOW) );
         symbolTable.put( "print", new STFunction("print", Token.FUNCTION, Token.VOID, Token.BUILTIN, VAR_ARGS) );
         symbolTable.put( "Int", new STControl("Int", Token.CONTROL, Token.DECLARE) );
         symbolTable.put( "Float", new STControl("Float", Token.CONTROL, Token.DECLARE) );
