@@ -144,11 +144,12 @@ public class Parser {
 			case Token.FUNCTION:
 				// is it user defined or built in
 				switch (scan.currentToken.subClassif) {
-				case Token.BUILTIN:
-					result = builtInFunctions();
-					break;
-
-				// TODO will handle user defined in future
+					case Token.BUILTIN:
+						result = builtInFunctions();
+						break;
+					
+					default :
+						error("In statements(), user defined functions are not handled at this time");
 				}
 				break; // from function
 
@@ -226,7 +227,7 @@ public class Parser {
 			if(scan.currentToken.tokenStr.equals("in"))
 			{
 				
-				ResultValue arrayControl = new ResultValue();
+				//ResultValue arrayControl = new ResultValue();
 				
 				//TODO next token should be an array or a string, add strings  
 				scan.getNext();
@@ -857,9 +858,8 @@ public class Parser {
 		
 		if(scan.currentToken.subClassif == Token.BUILTIN)
 			result = builtInFunctions();
-		
-		//else
-			//TODO user-defined functions 
+		else
+			error("User defined functions are not supported at this time");
 			
 		return result;
 	}
@@ -873,7 +873,7 @@ public class Parser {
 	 */
 	public ResultValue builtInFunctions() throws Exception
 	{
-		ResultValue result = new ResultValue();
+		//ResultValue result = new ResultValue();
 		ResultValue returnedResult = new ResultValue();
 		
 		//switch based on current token 
@@ -936,7 +936,7 @@ public class Parser {
 		ResultValue result = new ResultValue();
 		
 		Token previousToken = scan.previousToken;
-		ResultValue matchValue = null; 
+		ResultValue matchValue = new ResultValue(); 
 		
 		if(previousToken.subClassif == Token.IDENTIFIER)
 			matchValue = getIdentifier(previousToken.tokenStr);
@@ -1016,7 +1016,7 @@ public class Parser {
 		
 		ResultValue result = new ResultValue();
 		Token previousToken = scan.previousToken;
-		ResultValue matchValue = null; 
+		ResultValue matchValue = new ResultValue(); 
 		
 		if(previousToken.subClassif == Token.IDENTIFIER)
 			matchValue = getIdentifier(previousToken.tokenStr);
@@ -2283,7 +2283,7 @@ public class Parser {
 				break;
 
 			default:
-				// TODO Test other subclasses in future programs
+				error("in expression(), '%s' is not a valid data type", scan.currentToken.tokenStr);
 				break;
 
 			}
@@ -2330,7 +2330,7 @@ public class Parser {
 					
 						
 					}
-						//TODO Evaluate as an integer for now, change later 
+						//Evaluate as an integer for now, change later 
 						
 						//no more operators, evaluate the expression and return 
 						evaluatedExpression = HavabolUtilities.calculateExp(this, expressionString, Token.INTEGER);
@@ -2379,6 +2379,8 @@ public class Parser {
 				String variableString = scan.currentToken.tokenStr;
 				result.type = scan.currentToken.subClassif;
 				result = returnValue();
+				if(result.value == null)
+					result.value = "0";
 				
 				
 				
@@ -2535,9 +2537,6 @@ public class Parser {
 						
 					}
 					
-					
-
-						
 					ResultValue opResult = returnValue();
 					term += opResult.value;
 					result.type = opResult.type;
@@ -2553,18 +2552,12 @@ public class Parser {
 					term += scan.currentToken.tokenStr;
 				}
 				
-				
-
 				scan.getNext();
 			}
 
 		}
 		
-		
-	
-		
-		
-			result = HavabolUtilities.calculateExp(this, term, result.type);
+		result = HavabolUtilities.calculateExp(this, term, result.type);
 		
 		term = "";
 
@@ -2666,9 +2659,6 @@ public class Parser {
 		scan.getNext();
 		checkCurrentToken("]");
 		
-		//System.out.println("Returning " + result.value);
-		
-		
 		return result;
 		
 	}
@@ -2710,10 +2700,6 @@ public class Parser {
 			if(scan.currentToken.tokenStr.equals(";"))
 				error("In getArrayIndex(), reached the end of the statement before a matching ']'");
 			
-			
-			
-			
-			
 			if(scan.currentToken.subClassif == Token.IDENTIFIER)
 			{
 				ResultValue entry = returnValue();
@@ -2729,8 +2715,6 @@ public class Parser {
 			
 		}
 		
-	
-		
 		//current token is "]", the expression is complete, get the index 
 		
 		result = HavabolUtilities.calculateExp(this, resultString, dataType);
@@ -2738,6 +2722,7 @@ public class Parser {
 
 		return index;
 	}
+	
 	
 	/**
 	 * Concatenates strings together to form one string 
